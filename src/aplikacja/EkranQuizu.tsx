@@ -1,3 +1,6 @@
+import { OdpowiedzWlasna } from './OdpowiedzWlasna';
+import { analizatorAutorski } from '../ai/analizator';
+import type { Analizator } from '../ai/analizator';
 import {
   useEffect as poZmianie,
   useRef as referencja,
@@ -42,12 +45,26 @@ function opisDecyzji(quiz: Quiz, decyzja: Decyzja | null): string {
     .join(', ');
 }
 
-export function EkranQuizu() {
+export function EkranQuizu({
+  analizator = analizatorAutorski,
+}: { analizator?: Analizator } = {}) {
   const { sesjaId } = parametry();
-  return <WczytanyQuiz key={sesjaId} sesjaId={sesjaId ?? ''} />;
+  return (
+    <WczytanyQuiz
+      key={sesjaId}
+      sesjaId={sesjaId ?? ''}
+      analizator={analizator}
+    />
+  );
 }
 
-function WczytanyQuiz({ sesjaId }: { sesjaId: string }) {
+function WczytanyQuiz({
+  sesjaId,
+  analizator,
+}: {
+  sesjaId: string;
+  analizator: Analizator;
+}) {
   const [wynik, ustawWynik] = stan<Wynik<PrzebiegSesji> | null>(null);
   const [proba, ustawProbe] = stan(0);
   poZmianie(() => {
@@ -79,7 +96,7 @@ function WczytanyQuiz({ sesjaId }: { sesjaId: string }) {
     };
   }, [sesjaId, proba]);
   if (wynik?.stan === 'gotowy')
-    return <PrzebiegQuizu poczatek={wynik.wartosc} />;
+    return <PrzebiegQuizu poczatek={wynik.wartosc} analizator={analizator} />;
   return (
     <section className="panel">
       <h1>Uruchamianie quizu</h1>
@@ -106,8 +123,16 @@ function WczytanyQuiz({ sesjaId }: { sesjaId: string }) {
   );
 }
 
-function PrzebiegQuizu({ poczatek }: { poczatek: PrzebiegSesji }) {
+function PrzebiegQuizu({
+  poczatek,
+  analizator,
+}: {
+  poczatek: PrzebiegSesji;
+  analizator: Analizator;
+}) {
   const [zapisany, ustawZapisany] = stan(poczatek);
+  const aktualnyZapis = referencja(poczatek);
+  const [blokadaSzkicu, ustawBlokadeSzkicu] = stan(false);
   const przebieg = zapisany.przebieg;
   const [blad, ustawBlad] = stan('');
   const [oczekujacy, ustawOczekujacy] = stan<PrzebiegSesji | null>(null);
@@ -133,25 +158,37 @@ function PrzebiegQuizu({ poczatek }: { poczatek: PrzebiegSesji }) {
   }, [oczekujacy]);
 
   async function utrwal(kandydat: PrzebiegSesji) {
-    if (trwaZapis.current) return;
+    if (trwaZapis.current) return false;
     trwaZapis.current = true;
     ustawOczekujacy(kandydat);
     ustawZapisywanie(true);
     ustawBlad('');
     try {
-      await zapiszSesje(kandydat.sesja, zapisany.sesja);
+      await zapiszSesje(kandydat.sesja, aktualnyZapis.current.sesja);
+      aktualnyZapis.current = kandydat;
       ustawZapisany(kandydat);
       ustawOczekujacy(null);
+      return true;
     } catch (blad) {
       ustawBlad(blad instanceof Error ? blad.message : 'Nie zapisano sesji.');
+      return false;
     } finally {
       trwaZapis.current = false;
       ustawZapisywanie(false);
     }
   }
 
+  async function zapiszWlasna(wynik: Wynik<PrzebiegSesji>): Promise<boolean> {
+    if (oczekujacy || trwaZapis.current) return false;
+    if (wynik.stan !== 'gotowy') {
+      ustawBlad(wynik.opis);
+      return false;
+    }
+    return utrwal(wynik.wartosc);
+  }
+
   function zastosujSesje(wynik: Wynik<PrzebiegSesji>) {
-    if (oczekujacy || trwaZapis.current) return;
+    if (oczekujacy || trwaZapis.current || blokadaSzkicu) return;
     if (wynik.stan === 'gotowy') void utrwal(wynik.wartosc);
     else ustawBlad(wynik.opis);
   }
@@ -263,7 +300,7 @@ function PrzebiegQuizu({ poczatek }: { poczatek: PrzebiegSesji }) {
                       {wariant.wyjasnienie && <p>{wariant.wyjasnienie}</p>}
                       <button
                         className="przycisk"
-                        aria-disabled={oczekujacy !== null}
+                        disabled={oczekujacy !== null || blokadaSzkicu}
                         aria-pressed={zaznaczony}
                         aria-label={`Wybierz: ${wariant.etykieta}`}
                         onClick={() =>
@@ -282,11 +319,14 @@ function PrzebiegQuizu({ poczatek }: { poczatek: PrzebiegSesji }) {
                 })}
               </div>
               {pytanie.innaOdpowiedz && (
-                <p>
-                  {pytanie.innaOdpowiedz.etykieta}: odpowiedź własna jest
-                  nieobsługiwana w aktualnej wersji. Wymaga analizy i
-                  potwierdzenia.
-                </p>
+                <OdpowiedzWlasna
+                  key={`${pytanie.id}-${zapisany.sesja.decyzje.find((decyzja) => decyzja.pytanieId === pytanie.id)?.id ?? 'brak'}`}
+                  przebieg={zapisany}
+                  analizator={analizator}
+                  zapisz={zapiszWlasna}
+                  zablokowany={oczekujacy !== null}
+                  ustawBlokade={ustawBlokadeSzkicu}
+                />
               )}
             </>
           )}
@@ -384,7 +424,7 @@ function PrzebiegQuizu({ poczatek }: { poczatek: PrzebiegSesji }) {
                 <li key={pytanie.id}>
                   <button
                     className="przycisk drugorzedny"
-                    disabled={oczekujacy !== null}
+                    disabled={oczekujacy !== null || blokadaSzkicu}
                     onClick={() =>
                       zastosujSesje(
                         wrocDoPytania(
@@ -405,7 +445,9 @@ function PrzebiegQuizu({ poczatek }: { poczatek: PrzebiegSesji }) {
       <div className="nawigacja-quizu">
         <button
           className="przycisk"
-          disabled={przebieg.indeksPytania === 0 || oczekujacy !== null}
+          disabled={
+            przebieg.indeksPytania === 0 || oczekujacy !== null || blokadaSzkicu
+          }
           onClick={() => {
             zastosuj({ stan: 'gotowy', wartosc: przejdzWstecz(przebieg) });
           }}
@@ -417,7 +459,10 @@ function PrzebiegQuizu({ poczatek }: { poczatek: PrzebiegSesji }) {
             className="przycisk"
             disabled={
               obsluga?.stan !== 'gotowy' ||
-              wybrany === null ||
+              !zapisany.sesja.decyzje.some(
+                (decyzja) => decyzja.pytanieId === pytanie.id,
+              ) ||
+              blokadaSzkicu ||
               oczekujacy !== null
             }
             onClick={() => zastosuj(przejdzDalej(przebieg))}
@@ -428,7 +473,7 @@ function PrzebiegQuizu({ poczatek }: { poczatek: PrzebiegSesji }) {
         {pytanie && (
           <button
             className="przycisk drugorzedny"
-            disabled={oczekujacy !== null}
+            disabled={oczekujacy !== null || blokadaSzkicu}
             onClick={() =>
               zastosujSesje(odlozPytanie(zapisany, new Date().toISOString()))
             }

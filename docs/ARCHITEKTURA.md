@@ -2,7 +2,7 @@
 
 **Quizomat jest silnikiem uniwersalnym, a konkretne quizy są danymi.**
 
-Stan Etapu 7: działa shell / PWA, model domenowy, deterministyczny importer i adaptacyjny runtime pojedynczego wyboru. Istniejąca baza IndexedDB `quizomat` w wersji 3 przechowuje osobno definicje (`quizy`) oraz kanoniczne sesje z dziennikiem (`sesje`). Biblioteka tworzy niezależne sesje i pozwala kontynuować niedokończone. Autosave obejmuje wybór, Dalej / Wstecz, odkładanie i powrót do odłożonego pytania. Ustawienie „Pokazuj rekomendacje” pozostaje w localStorage; zasoby są odłożone.
+Stan Etapu 8: działa shell / PWA, model domenowy, deterministyczny importer i adaptacyjny runtime pojedynczego wyboru. Istniejąca baza IndexedDB `quizomat` w wersji 3 przechowuje osobno definicje (`quizy`) oraz kanoniczne sesje z dziennikiem (`sesje`). Biblioteka tworzy niezależne sesje i pozwala kontynuować niedokończone. Autosave obejmuje wybór, Dalej / Wstecz, odkładanie i powrót do odłożonego pytania. Ustawienie „Pokazuj rekomendacje” pozostaje w localStorage; zasoby są odłożone.
 
 ## Historia i replay — Etap 6
 
@@ -85,3 +85,7 @@ Wynik analizy jest propozycją do zatwierdzenia. Nie zmienia automatycznie decyz
 ## Kontrola i ograniczenia dowodu
 
 Ścisły TypeScript, ESLint, Prettier, Vitest / Testing Library i build produkcyjny. Testy Etapu 0 sprawdzają shell i nawigację, a testy komunikatu aktualizacji korzystają z atrapy rejestracji service workera. Build potwierdza generowanie artefaktów PWA. Dowód instalacji, działania offline i aktualizacji na fizycznym telefonie wymaga osobnego sprawdzenia; jednostkowe testy DOM go nie zastępują.
+
+## Etap 8 — własna odpowiedź
+
+Istniejące szkice sesji są zapisywane osobno od decyzji. Wynik neutralnej usługi analizy pozostaje propozycją; „Zatwierdź odpowiedź” tworzy decyzję w dotychczasowym dzienniku i uruchamia przeliczenie ścieżki. „Zmień odpowiedź” unieważnia analizę szkicu. Zapisany szkic, oczekiwanie i wynik przetrwają restart bez automatycznej analizy lub zatwierdzenia. Awaria usługi zachowuje tekst. Magazyn i wersja dziennika pozostają bez zmian. FakeAnalizator służy testom; produkcyjnie dostępna jest lokalna interpretacja autora, a nieskonfigurowane AI zwraca jawną niedostępność. Kontrakt wykonania opisuje [README silnika](../src/silnik/README.md#etap-8--analizowana-własna-odpowiedź).

@@ -207,7 +207,7 @@ opisz('Liniowy runtime', () => {
   });
 
   sprawdz(
-    'jawnie odmawia kompozycji, prezentacji wizualnej i własnej odpowiedzi',
+    'jawnie odmawia kompozycji, prezentacji wizualnej; przyjmuje przeanalizowaną własną odpowiedź',
     () => {
       oczekuj(
         sprawdzObslugePytania({
@@ -235,7 +235,7 @@ opisz('Liniowy runtime', () => {
             potencjalneSkutki: [],
           },
         }).stan,
-      ).toBe('nieobslugiwane');
+      ).toBe('gotowy');
       oczekuj(walidujOdpowiedz(pytanie, odpowiedz).stan).toBe('gotowy');
     },
   );

@@ -478,7 +478,7 @@ opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
         ekran.queryByRole('button', { name: 'Wróć później' }),
       ).toBeVisible();
       oczekuj(
-        ekran.getByText(/Inne: odpowiedź własna jest nieobsługiwana/),
+        ekran.getByRole('textbox', { name: 'Treść własnej odpowiedzi' }),
       ).toBeVisible();
     },
   );

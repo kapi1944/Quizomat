@@ -4,13 +4,13 @@ Etap 4: `runtime.ts` wykonuje liniowy przebieg bazowych pytań w kolejności def
 
 Obsługiwane jest tekstowe pytanie z jednym sposobem `pojedynczyWybor`. Wybór tworzy kanoniczną `Decyzja`; semantyka sprawdza bieżące pytanie, sposób i rodzaj odpowiedzi, istniejący wariant, wymagane wartości oraz odwołania adnotacji. Zmiana wyboru przenosi poprzednią decyzję do roboczej historii. Dalej wymaga poprawnej decyzji, Wstecz zachowuje wybory, a indeks równy liczbie pytań oznacza zakończenie. Powrót z zakończenia umożliwia edycję ostatniego wyboru.
 
-Wynik operacji jawnie rozróżnia `gotowy`, `blad` i `nieobslugiwane`. Pozostałe mechaniki, kompozycje sposobów oraz prezentacje z obrazami otrzymują odmowę wykonania. Etap 7 wykonuje reguły adaptacyjne na aktywnej ścieżce. `innaOdpowiedz` nie blokuje standardowego wyboru, ale własna odpowiedź zawsze otrzymuje odmowę i nie staje się zwykłym wariantem.
+Wynik operacji jawnie rozróżnia `gotowy`, `blad` i `nieobslugiwane`. Pozostałe mechaniki, kompozycje sposobów oraz prezentacje z obrazami otrzymują odmowę wykonania. Etap 7 wykonuje reguły adaptacyjne na aktywnej ścieżce. `innaOdpowiedz` nie blokuje standardowego wyboru, a Etap 8 dodaje osobny przepływ analizy i świadomego zatwierdzenia własnego tekstu.
 
 Etap 5: `sesja.ts` wiąże stan runtime z istniejącym modelem domenowym `Sesja`. Czyste funkcje tworzą sesję, walidują jej wznowienie, odwzorowują zmiany runtime oraz obsługują odłożenie i powrót. Sesja przechowuje referencję do wersji definicji, decyzje, aktualne pytanie i odłożone ID. Odłożenie nie jest odpowiedzią; po dojściu do końca zestawu sesja z odłożonymi pytaniami nadal ma `stan: "wTrakcie"`. Powrót do pytania nie usuwa go z listy. Dopiero poprawny wybór rozstrzyga odłożone pytanie.
 
 Etap 6: `replay.ts` odtwarza projekcję sesji z bazy i uporządkowanych zdarzeń domenowych. `sesja.ts` zamienia operację runtime na zdarzenie i wykorzystuje replay, zamiast zapisywać dowolnie zmieniony stan. Zdarzenia decyzji zachowują pełną poprzednią / nową decyzję, pytanie, czas i kolejność. Odczyt jest czysty; nie dopisuje zdarzeń. Wznowienie odrzuca rozbieżność projekcji i dziennika. `historiaDecyzji` jest archiwum poprzednich decyzji, a dziennik przechowuje kolejność operacji. Migracja dawnych sesji zachowuje dokładną bazę, bez zgadywania historii. Etap 7 podłącza do tego samego replayu adaptację.
 
-Silnik nadal nie zna IndexedDB ani Reacta. Zapis i autosave organizują warstwy danych oraz aplikacji. Przepływ szkic → analiza → potwierdzenie pozostaje odłożony. Decyzje późniejszych, niezależnych pytań liniowych pozostają ważne i są ponownie walidowane przy przeliczeniu.
+Silnik nadal nie zna IndexedDB ani Reacta. Zapis i autosave organizują warstwy danych oraz aplikacji. Etap 8 wykonuje przepływ szkic → analiza → potwierdzenie. Decyzje późniejszych, niezależnych pytań liniowych pozostają ważne i są ponownie walidowane przy przeliczeniu.
 
 ## Etap 7 — deterministyczna adaptacja
 
@@ -30,3 +30,17 @@ Każda wykonana operacja tworzy istniejącą `ZmianaAdaptacyjna`: rodzaj, cel, r
 Replay Etapu 6 odtwarza adaptację po każdym zdarzeniu. Zmiana wcześniejszej odpowiedzi przelicza całą ścieżkę wraz z zależnymi regułami. Wycofane zmiany trafiają do `historiaZmianAdaptacyjnych`; pełny audyt decyzji pozostaje w dzienniku. Po odłożeniu źródła znikają jego konsekwencje; jeżeli znika następne pytanie, wybieramy pierwsze dalsze zachowane pytanie albo koniec zestawu. Wznowienie weryfikuje także zgodność obu tablic adaptacji z replayem. Zapis korzysta z dotychczasowej transakcji IndexedDB, bez migracji i bez zmiany wersji formatu.
 
 UI pokazuje wszystkie aktualne operacje, także pominięcia, jako „Pytanie dodane”, „Pytanie zmodyfikowane” lub „Pytanie pominięte”. „Dlaczego?” ujawnia powód, regułę i źródłowe pytanie / odpowiedź. Historyczna odpowiedź jest oznaczona jako nieaktualna decyzja. Testy obejmują operacje, konflikty, zależności, cofanie, wielokrotną zmianę, osierocenie, serializację oraz ponowne otwarcie ekranu z IndexedDB.
+
+## Etap 8 — analizowana własna odpowiedź
+
+`odpowiedz-wlasna.ts` korzysta z istniejącego `SzkicWlasnejOdpowiedzi`: `szkic` → `oczekujeAnalizy` → `przeanalizowana`. Pusty tekst może być szkicem, ale nie może trafić do analizy. Wynik wymaga oczekującego szkicu z dokładnie tym samym tekstem; nieaktualny wynik jest odrzucany. Zmiana tekstu tworzy ponownie `szkic` i usuwa poprzednią analizę. Nie modyfikuje wcześniejszej zatwierdzonej decyzji.
+
+Zapis szkicu i analizy zmienia wyłącznie `szkiceWlasnychOdpowiedzi`, bez zdarzeń decyzji, przeliczenia ścieżki ani aktualizacji czasu ostatniego zdarzenia `zmieniono`. Magazyn nadal sprawdza zgodność dziennika przy zapisie, bez dodawania operacji do replayu. „Zapisz szkic” utrwala tekst w dotychczasowej transakcji IndexedDB. „Przeanalizuj odpowiedź” najpierw utrwala szkic i oczekiwanie, dopiero potem uruchamia usługę. Niezapisany tekst jest oznaczony, blokuje nawigację pytania i uruchamia ostrzeżenie przed zamknięciem okna.
+
+Samo wpisanie tekstu i wynik analizy nie są decyzją. Dopiero „Zatwierdź odpowiedź” tworzy kanoniczną `Decyzja.odpowiedz` rodzaju `wlasna`, zawierającą tekst i pełną analizę, przez dotychczasowy reduktor / dziennik Etapu 6. Replay odtwarza decyzję bez ponownego wywoływania analizatora; adaptacja Etapu 7 przelicza konsekwencje. Poprzednia decyzja trafia do historii. Szkic tego pytania zostaje usunięty po potwierdzeniu, w tym samym zapisie. Dalej akceptuje zatwierdzoną odpowiedź własną. Pytanie musi jawnie dopuszczać `innaOdpowiedz`.
+
+Własny tekst nie jest mapowany na wariant ani mechanikę `otwarta`. Istniejące reguły mają warunki dotyczące standardowych wartości odpowiedzi; zatwierdzenie własnej odpowiedzi może wycofać konsekwencje poprzedniego wyboru, ale analiza nie tworzy nowych reguł. „Potencjalnie dotknięte pytania” w wyniku są informacją, nie wykonaniem operacji.
+
+„Zmień odpowiedź” wraca do szkicu; ponowne zatwierdzenie wymaga nowej analizy. Awaria, niepoprawny wynik lub niedostępność usługi zachowują tekst i stan oczekiwania, pokazują błąd i umożliwiają ponowienie. Restart odtwarza zapisany szkic / oczekiwanie / wynik bez uruchamiania analizy ani automatycznego potwierdzenia. Błąd zapisu korzysta z dotychczasowego „Ponów zapis”; nie wywołujemy usługi przed utrwaleniem oczekiwania.
+
+Neutralny interfejs i deterministyczny FakeAnalizator opisuje [moduł analizy](../ai/README.md). Testy silnika i ekranu sprawdzają rozdzielenie szkicu / wyniku / decyzji, ponowną edycję, restart z IndexedDB, awarie, stan oczekiwania i replay dopiero po potwierdzeniu.

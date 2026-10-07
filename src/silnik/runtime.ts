@@ -48,13 +48,12 @@ export function walidujOdpowiedz(
   if (!wynik.success)
     return { stan: 'blad', opis: 'Niepoprawna struktura odpowiedzi.' };
   const odpowiedz = wynik.data;
-  if (odpowiedz.rodzaj === 'wlasna')
-    return {
-      stan: 'nieobslugiwane',
-      opis: 'Odpowiedź własna jest nieobsługiwana w aktualnej wersji. Wymaga osobnego przebiegu analizy i potwierdzenia.',
-    };
   const obsluga = sprawdzObslugePytania(pytanie);
   if (obsluga.stan !== 'gotowy') return obsluga;
+  if (odpowiedz.rodzaj === 'wlasna')
+    return pytanie.innaOdpowiedz
+      ? { stan: 'gotowy', wartosc: odpowiedz }
+      : { stan: 'blad', opis: 'To pytanie nie dopuszcza własnej odpowiedzi.' };
   for (const wartosc of odpowiedz.wartosci) {
     const sposob = pytanie.sposobyOdpowiedzi.find(
       (sposob) => sposob.id === wartosc.sposobId,

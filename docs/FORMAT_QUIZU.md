@@ -330,3 +330,7 @@ Neutralne fixture'y w `testy/domena/przyklady.ts`: minimalny quiz tekstowy, pyta
 Pliki fixture'ów standardu importu w `testy/import/pliki`: `poprawny.json`, `brak-id.json`, `duplikat-id.json`, `zla-liczba-pytan.json`, `bledna-rekomendacja.json`, `nieistniejace-odwolanie.json`, `nieprawidlowy-typ-pytania.json`, `uszkodzona-skala.json`. Są danymi testowymi; błędne pliki nie są przeznaczone do biblioteki.
 
 Raport będzie mieć osobną wersję oraz referencję do sesji / quizu. Zawierać będzie komplet decyzji, ich opisowe znaczenie, konsekwencje, rekomendacje autora, jawne zmiany, wybrane fragmenty i nierozstrzygnięte kwestie. Specyfikacja wynikowa użyje tylko aktualnych zatwierdzonych decyzji. Schemat raportu i eksport są odłożone; nie traktujemy pliku quizu jako zamiennika eksportu sesji.
+
+## Uzupełnienie Etapu 8
+
+Przepływ własnej odpowiedzi korzysta z istniejących `SzkicWlasnejOdpowiedzi`, `Odpowiedz` i `Decyzja`. `analiza` zachowuje wymagane pola `tryb`, `interpretacja`, `potencjalneSkutki`; opcjonalnie rozpoznaje tablice tekstów `zalety`, `wady`, `niejednoznacznosci` oraz tablicę stabilnych ID `dotknietePytaniaId`. Nowe pola są opcjonalne, bez zmiany wersji i bez alternatywnego formatu. ID dotkniętych pytań sprawdza usługa w kontekście quizu. Są opisem potencjalnego wpływu, nie operacjami adaptacji. Szkic i analiza nie tworzą decyzji; świadome zatwierdzenie zapisuje pełny tekst i analizę w zdarzeniu decyzji. Szczegóły wykonania opisuje README silnika.

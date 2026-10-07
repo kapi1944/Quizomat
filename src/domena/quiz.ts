@@ -60,6 +60,10 @@ export const schematAnalizy = z.looseObject({
   tryb: z.enum(['autorska', 'ai']),
   interpretacja: schematTekstu,
   potencjalneSkutki: z.array(schematKonsekwencji),
+  zalety: z.array(schematTekstu).optional(),
+  wady: z.array(schematTekstu).optional(),
+  dotknietePytaniaId: z.array(schematId).optional(),
+  niejednoznacznosci: z.array(schematTekstu).optional(),
 });
 
 const podstawaMechaniki = { id: schematId, wymagany: z.boolean() };

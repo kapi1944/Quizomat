@@ -79,11 +79,16 @@ export function wznowSesje(quiz: Quiz, dane: unknown): Wynik<PrzebiegSesji> {
     };
   const poczatek = rozpocznijQuiz(quiz);
   if (poczatek.stan !== 'gotowy') return poczatek;
-  if (sesja.szkiceWlasnychOdpowiedzi.length)
-    return {
-      stan: 'nieobslugiwane',
-      opis: 'Sesje ze szkicami są nieobsługiwane w aktualnej wersji.',
-    };
+  for (const szkic of sesja.szkiceWlasnychOdpowiedzi) {
+    const pytanie = [...quiz.pytania, ...quiz.pytaniaDodatkowe].find(
+      (pytanie) => pytanie.id === szkic.pytanieId,
+    );
+    if (!pytanie?.innaOdpowiedz)
+      return {
+        stan: 'blad',
+        opis: 'Szkic dotyczy pytania bez własnej odpowiedzi.',
+      };
+  }
   const projekcja = przeliczAdaptacje({
     ...poczatek.wartosc,
     decyzje: sesja.decyzje,
