@@ -1,5 +1,7 @@
 import type { Quiz } from '../domena/quiz';
 import type { WynikImportu } from '../import/walidator';
+import { schematSesji } from '../domena/sesja';
+import { uzupelnijDziennik } from '../silnik/replay';
 
 export interface WpisBiblioteki {
   quiz: Quiz;
@@ -17,7 +19,7 @@ export function otworzBiblioteke(): Promise<IDBDatabase> {
       return;
     }
     let odrzucone = false;
-    const zadanie = indexedDB.open('quizomat', 2);
+    const zadanie = indexedDB.open('quizomat', 3);
     zadanie.onupgradeneeded = (zdarzenie) => {
       if (zdarzenie.oldVersion < 1)
         zadanie.result.createObjectStore('quizy', { keyPath: 'quiz.id' });
@@ -26,6 +28,20 @@ export function otworzBiblioteke(): Promise<IDBDatabase> {
           keyPath: 'id',
         });
         sesje.createIndex('quizId', 'quizId');
+      }
+      if (zdarzenie.oldVersion < 3) {
+        const kursor = zadanie.transaction!.objectStore('sesje').openCursor();
+        kursor.onsuccess = () => {
+          if (!kursor.result) return;
+          try {
+            const sesja = schematSesji.parse(kursor.result.value);
+            if (!sesja.dziennikSesji)
+              kursor.result.update(uzupelnijDziennik(sesja));
+            kursor.result.continue();
+          } catch {
+            zadanie.transaction!.abort();
+          }
+        };
       }
     };
     zadanie.onerror = () =>

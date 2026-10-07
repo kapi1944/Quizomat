@@ -88,6 +88,54 @@ async function otworz(dane: unknown = quiz, sciezka = '/biblioteka') {
 
 opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
   sprawdz(
+    'po A → B → A restart zachowuje audyt, a odczyt nie tworzy nowych zdarzeń',
+    async () => {
+      const osoba = await otworz();
+      await kliknij(
+        osoba,
+        await ekran.findByRole('button', { name: 'Wybierz: Prosty' }),
+      );
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: 'Wybierz: Czwarty' }),
+      );
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: 'Wybierz: Prosty' }),
+      );
+      await kliknij(
+        osoba,
+        ekran.getByText('Historia decyzji', { exact: true }),
+      );
+      oczekuj(
+        ekran.getByText('Poprzednio: Prosty. Teraz: Czwarty.'),
+      ).toBeVisible();
+      oczekuj(
+        ekran.getByText('Poprzednio: Czwarty. Teraz: Prosty.'),
+      ).toBeVisible();
+      const zapis = (await odczytajSesje())[0]!;
+      oczekuj(zapis.dziennikSesji?.zdarzenia).toHaveLength(3);
+      posprzataj();
+      pokaz(
+        <Router initialEntries={[`/sesja/${zapis.id}`]}>
+          <Aplikacja />
+        </Router>,
+      );
+      oczekuj(
+        await ekran.findByRole('button', { name: 'Wybierz: Prosty' }),
+      ).toHaveAttribute('aria-pressed', 'true');
+      await kliknij(
+        osoba,
+        ekran.getByText('Historia decyzji', { exact: true }),
+      );
+      oczekuj(
+        ekran.getByText('Poprzednio: Czwarty. Teraz: Prosty.'),
+      ).toBeVisible();
+      oczekuj(await odczytajSesje()).toEqual([zapis]);
+      oczekuj(await odczytajSesje()).toEqual([zapis]);
+    },
+  );
+  sprawdz(
     'restart przywraca dokładnie tę samą sesję, miejsce i wybraną odpowiedź',
     async () => {
       const osoba = await otworz();

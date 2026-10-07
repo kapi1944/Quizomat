@@ -1,6 +1,7 @@
 import { schematSesji } from '../domena/sesja';
 import type { Sesja } from '../domena/sesja';
 import { wznowSesje } from '../silnik/sesja';
+import { uzupelnijDziennik, zachowujeAudyt } from '../silnik/replay';
 import { otworzBiblioteke } from './biblioteka';
 import type { WpisBiblioteki } from './biblioteka';
 
@@ -26,7 +27,7 @@ export async function zapiszSesje(
   sesja: Sesja,
   poprzednia: Sesja | null,
 ): Promise<void> {
-  const poprawna = schematSesji.parse(sesja);
+  const poprawna = uzupelnijDziennik(schematSesji.parse(sesja));
   const baza = await otworzBiblioteke();
   try {
     await new Promise<void>((zakoncz, odrzuc) => {
@@ -46,9 +47,10 @@ export async function zapiszSesje(
           if (wynik.stan !== 'gotowy') throw new Error(wynik.opis);
           const odczyt = magazyn.get(poprawna.id);
           odczyt.onsuccess = () => {
-            const zapisane = odczyt.result as Sesja | undefined;
+            const odczytane = schematSesji.safeParse(odczyt.result);
+            const zapisane = odczytane.success ? odczytane.data : undefined;
             if (
-              (poprzednia === null && zapisane !== undefined) ||
+              (poprzednia === null && odczyt.result !== undefined) ||
               (poprzednia !== null &&
                 (JSON.stringify(zapisane) !== JSON.stringify(poprzednia) ||
                   poprawna.id !== poprzednia.id ||
@@ -58,6 +60,12 @@ export async function zapiszSesje(
             ) {
               opis =
                 'Sesja zmieniła się w innej karcie. Wczytaj ją ponownie przed dalszą edycją.';
+              transakcja.abort();
+              return;
+            }
+            if (poprzednia && !zachowujeAudyt(poprzednia, poprawna)) {
+              opis =
+                'Zapis nie może usuwać ani zmieniać wcześniejszego audytu sesji.';
               transakcja.abort();
               return;
             }

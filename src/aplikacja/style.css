@@ -245,6 +245,12 @@ footer {
 .ekran-quizu .drugorzedny {
   margin-left: 0;
 }
+.historia-decyzji summary {
+  min-height: 48px;
+  padding: 12px 0;
+  cursor: pointer;
+  font-weight: 650;
+}
 @media (max-width: 540px) {
   .dzialania-importu {
     flex-direction: column;

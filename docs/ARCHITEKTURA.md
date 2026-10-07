@@ -2,7 +2,19 @@
 
 **Quizomat jest silnikiem uniwersalnym, a konkretne quizy są danymi.**
 
-Stan Etapu 5: działa shell / PWA, model domenowy, deterministyczny importer i liniowy runtime pojedynczego wyboru. Istniejąca baza IndexedDB `quizomat` w wersji 2 przechowuje osobno definicje (`quizy`) oraz kanoniczne sesje (`sesje`). Biblioteka tworzy niezależne sesje i pozwala kontynuować niedokończone. Autosave obejmuje wybór, Dalej / Wstecz, odkładanie i powrót do odłożonego pytania. Ustawienie „Pokazuj rekomendacje” pozostaje w localStorage; zasoby i adaptacja są odłożone.
+Stan Etapu 6: działa shell / PWA, model domenowy, deterministyczny importer i liniowy runtime pojedynczego wyboru. Istniejąca baza IndexedDB `quizomat` w wersji 3 przechowuje osobno definicje (`quizy`) oraz kanoniczne sesje z dziennikiem (`sesje`). Biblioteka tworzy niezależne sesje i pozwala kontynuować niedokończone. Autosave obejmuje wybór, Dalej / Wstecz, odkładanie i powrót do odłożonego pytania. Ustawienie „Pokazuj rekomendacje” pozostaje w localStorage; zasoby i adaptacja są odłożone.
+
+## Historia i replay — Etap 6
+
+`dziennikSesji` rozdziela audyt od projekcji bieżącej sesji. Ma własną `wersja: 1`, `baza` i uporządkowane `zdarzenia`. Baza zawiera stan sesji w chwili utworzenia dziennika, w tym wszystkie wcześniej archiwizowane decyzje. Nie kopiuje definicji quizu. Nowe sesje mają pustą bazę decyzji; migracja 2 → 3 dodaje bazę z dokładnym stanem sesji Etapu 5. Nie zgadujemy dawnych zmian ani ich kolejności na podstawie dat. Wszystkie dotychczasowe pola i rozszerzenia pozostają zachowane. Migracja odbywa się atomowo w istniejącym zbiorze `sesje`; błąd dowolnego rekordu wycofuje całą migrację bez usuwania danych.
+
+Zdarzenia to `decyzja`, `odlozenie` i `nawigacja`. Kolejność 1, 2, 3… jest źródłem kolejności operacji również przy identycznych znacznikach czasu. Zdarzenie decyzji zawiera ID pytania, pełną poprzednią i nową decyzję oraz czas zmiany; pierwsza odpowiedź ma poprzednią decyzję null. Odpowiedzi nadal korzystają z kanonicznego modelu domenowego. Nie przechowujemy liter prezentacyjnych zamiast wartości. Nawigacja zapisuje poprzednie i nowe miejsce; odłożenie zachowuje poprzednią decyzję, jeżeli istniała.
+
+`odtworzSesje` jest czystym reduktorem: bierze niezmienną definicję, metadane sesji, bazę i zdarzenia. Od zera wylicza decyzje bieżące, archiwum decyzji, odłożone pytania, miejsce i ukończenie. Korzysta z istniejącej walidacji i przejść runtime. Sprawdza ciągłość kolejności, czasy, poprzedni stan operacji oraz legalność odpowiedzi i nawigacji. Nie czyta zegara, nie tworzy losowych ID, nie zapisuje danych i nie mutuje wejścia. `wznowSesje` dodatkowo weryfikuje zgodność zapisanej projekcji z replayem; rozbieżność jest jawnym błędem. Sam odczyt / restart nie dopisuje zdarzeń.
+
+Zmiana odpowiedzi zostaje najpierw zamieniona na zdarzenie, a stan do autosave powstaje przez replay. Nie akceptujemy dodatkowych decyzji ani usuniętego archiwum dopisanych poza reduktorem. Zapis IndexedDB wymaga niezmienionej bazy i identycznego prefiksu już zapisanych zdarzeń, oprócz dotychczasowej kontroli równoległej edycji. Zdarzenia oraz projekcja zapisują się razem; abort pozostawia poprzedni komplet danych. Widok „Historia decyzji” pokazuje poprzednią / nową odpowiedź, pytanie, czas i kolejność oddzielnie od bieżącego wyboru, a dawny audyt oznacza jako zapis sprzed migracji.
+
+Ścieżka pozostaje liniowa. Późniejsze niezależne odpowiedzi są ponownie sprawdzane i pozostają ważne; nie kasujemy ich bez istniejącej reguły zależności. Reguły adaptacyjne Etapu 7 nadal otrzymują jawną odmowę wykonania. Replay stanowi punkt przeliczenia przyszłej ścieżki, bez implementowania adaptacji teraz.
 
 Zakres Etapu 4 objął również podstawowy ekran decyzji i rozróżnienie rekomendacji / wyboru, pierwotnie przypisane do Etapów 6–7. Szczegóły i jawne granice wykonania opisuje `src/silnik/README.md`. Etap 5 rozszerza istniejący magazyn; importer oraz zbiór definicji pozostają bez zmian.
 
@@ -16,7 +28,7 @@ Adres `/sesja/:sesjaId` wskazuje konkretną sesję. Nowa sesja powstaje wyłącz
 
 Każda zmiana sesji jest zapisywana jedną transakcją obejmującą `quizy` i `sesje`. Porównanie z poprzednim zapisanym stanem w tej samej transakcji blokuje nadpisanie zmian innej karty. Ekran aktualizuje potwierdzony stan dopiero po `oncomplete`, blokuje kolejne operacje podczas zapisu, a po błędzie zachowuje poprzedni stan i kandydata do ponowienia. Niezapisany kandydat nie jest trwały; zamknięcie / odświeżenie podczas zapisu lub błędu uruchamia ostrzeżenie `beforeunload`. Potwierdzony zapis można wznowić po restarcie. Fizyczne przerwanie procesu przed zakończeniem transakcji nie daje gwarancji zapisania rozpoczętej zmiany.
 
-„Wróć później” usuwa bieżącą decyzję odłożonego pytania i przechodzi dalej. Dotychczasowa decyzja, jeśli istniała, pozostaje w istniejącym polu historii. Odłożone ID pozostaje na liście również po powrocie do pytania; usuwa je dopiero poprawna odpowiedź. `biezacePytanieId: null` i `stan: "wTrakcie"` oznaczają koniec zestawu z odłożonymi pytaniami. Sesja może być `zakonczona` dopiero przy odpowiedziach na cały zestaw, pustej liście odłożonych i zakończeniu nawigacji. Pełna historia zmian / replay pozostaje zakresem Etapu 6 zgodnie z aktualnym poleceniem.
+„Wróć później” usuwa bieżącą decyzję odłożonego pytania i przechodzi dalej. Dotychczasowa decyzja, jeśli istniała, pozostaje w istniejącym polu historii. Odłożone ID pozostaje na liście również po powrocie do pytania; usuwa je dopiero poprawna odpowiedź. `biezacePytanieId: null` i `stan: "wTrakcie"` oznaczają koniec zestawu z odłożonymi pytaniami. Sesja może być `zakonczona` dopiero przy odpowiedziach na cały zestaw, pustej liście odłożonych i zakończeniu nawigacji. Etap 6 zachowuje te zasady, wyliczając je przez replay dziennika.
 
 ## Moduły
 

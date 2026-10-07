@@ -23,6 +23,24 @@ import {
   wznowSesje,
 } from '../silnik/sesja';
 import type { PrzebiegSesji } from '../silnik/sesja';
+import type { Decyzja } from '../domena/sesja';
+import type { Quiz } from '../domena/quiz';
+
+function opisDecyzji(quiz: Quiz, decyzja: Decyzja | null): string {
+  if (!decyzja) return 'Brak odpowiedzi';
+  if (decyzja.odpowiedz.rodzaj === 'wlasna') return decyzja.odpowiedz.tekst;
+  return decyzja.odpowiedz.wartosci
+    .map((wartosc) => {
+      if (wartosc.rodzaj !== 'pojedynczyWybor') return 'Inny sposób odpowiedzi';
+      return (
+        quiz.pytania
+          .find((pytanie) => pytanie.id === decyzja.pytanieId)
+          ?.warianty.find((wariant) => wariant.id === wartosc.wariantId)
+          ?.etykieta ?? 'Nieznany wariant'
+      );
+    })
+    .join(', ');
+}
 
 export function EkranQuizu() {
   const { sesjaId } = parametry();
@@ -251,6 +269,66 @@ function PrzebiegQuizu({ poczatek }: { poczatek: PrzebiegSesji }) {
         </p>
       )}
       {blad && <p role="alert">{blad}</p>}
+      <details className="historia-decyzji">
+        <summary>Historia decyzji</summary>
+        <p>
+          Historia pokazuje, jak powstały decyzje. Aktualny wybór jest oznaczony
+          osobno przy wariancie.
+        </p>
+        {(zapisany.sesja.dziennikSesji?.baza.historiaDecyzji.length ?? 0) >
+          0 && (
+          <>
+            <h2>Audyt sprzed migracji</h2>
+            <p>
+              Zachowano wcześniejsze decyzje. Dawny zapis nie zawierał pełnej
+              kolejności zmian.
+            </p>
+            <ul>
+              {zapisany.sesja.dziennikSesji?.baza.historiaDecyzji.map(
+                (decyzja) => (
+                  <li key={decyzja.id}>
+                    {
+                      przebieg.quiz.pytania.find(
+                        (pytanie) => pytanie.id === decyzja.pytanieId,
+                      )?.tresc
+                    }
+                    : {opisDecyzji(przebieg.quiz, decyzja)} —{' '}
+                    {new Date(decyzja.zatwierdzono).toLocaleString('pl-PL')}
+                  </li>
+                ),
+              )}
+            </ul>
+          </>
+        )}
+        <ol>
+          {zapisany.sesja.dziennikSesji?.zdarzenia
+            .filter((zdarzenie) => zdarzenie.rodzaj !== 'nawigacja')
+            .map((zdarzenie) => (
+              <li key={zdarzenie.kolejnosc} value={zdarzenie.kolejnosc}>
+                <p>
+                  {
+                    przebieg.quiz.pytania.find(
+                      (pytanie) => pytanie.id === zdarzenie.pytanieId,
+                    )?.tresc
+                  }
+                </p>
+                <p>
+                  Poprzednio:{' '}
+                  {opisDecyzji(przebieg.quiz, zdarzenie.poprzedniaDecyzja)}.
+                  Teraz:{' '}
+                  {zdarzenie.rodzaj === 'decyzja'
+                    ? opisDecyzji(przebieg.quiz, zdarzenie.nowaDecyzja)
+                    : 'Odłożone'}
+                  .
+                </p>
+                <p>
+                  Operacja {zdarzenie.kolejnosc} ·{' '}
+                  {new Date(zdarzenie.czas).toLocaleString('pl-PL')}
+                </p>
+              </li>
+            ))}
+        </ol>
+      </details>
       {oczekujacy && !zapisywanie && (
         <button className="przycisk" onClick={() => void utrwal(oczekujacy)}>
           Ponów zapis

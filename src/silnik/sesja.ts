@@ -3,6 +3,12 @@ import { schematSesji } from '../domena/sesja';
 import type { Sesja } from '../domena/sesja';
 import { biezacePytanie, rozpocznijQuiz, walidujOdpowiedz } from './runtime';
 import type { StanQuizu, Wynik } from './runtime';
+import {
+  dopiszZdarzenie,
+  migawkaSesji,
+  odtworzSesje,
+  uzupelnijDziennik,
+} from './replay';
 
 export interface PrzebiegSesji {
   sesja: Sesja;
@@ -36,7 +42,10 @@ export function utworzSesje(
     return { stan: 'blad', opis: 'Niepoprawne dane nowej sesji.' };
   return {
     stan: 'gotowy',
-    wartosc: { sesja: sesja.data, przebieg: poczatek.wartosc },
+    wartosc: {
+      sesja: uzupelnijDziennik(sesja.data),
+      przebieg: poczatek.wartosc,
+    },
   };
 }
 
@@ -44,7 +53,17 @@ export function wznowSesje(quiz: Quiz, dane: unknown): Wynik<PrzebiegSesji> {
   const wynik = schematSesji.safeParse(dane);
   if (!wynik.success)
     return { stan: 'blad', opis: 'Niepoprawne dane zapisanej sesji.' };
-  const sesja = wynik.data;
+  const odtworzona = odtworzSesje(quiz, wynik.data);
+  if (odtworzona.stan !== 'gotowy') return odtworzona;
+  if (
+    JSON.stringify(migawkaSesji(wynik.data)) !==
+    JSON.stringify(migawkaSesji(odtworzona.wartosc))
+  )
+    return {
+      stan: 'blad',
+      opis: 'Aktualny stan sesji nie odpowiada jej dziennikowi.',
+    };
+  const sesja = odtworzona.wartosc;
   if (sesja.quizId !== quiz.id || sesja.wersjaQuizu !== quiz.wersjaQuizu)
     return {
       stan: 'blad',
@@ -142,25 +161,55 @@ export function aktualizujSesje(
 ): Wynik<PrzebiegSesji> {
   if (wynik.stan !== 'gotowy') return wynik;
   const przebieg = wynik.wartosc;
-  const odlozonePytaniaId = stan.sesja.odlozonePytaniaId.filter(
-    (id) => !przebieg.decyzje.some((decyzja) => decyzja.pytanieId === id),
+  const zmienione = przebieg.decyzje.filter(
+    (decyzja) =>
+      !stan.sesja.decyzje.some(
+        (stara) => JSON.stringify(stara) === JSON.stringify(decyzja),
+      ),
   );
-  const biezacePytanieId = biezacePytanie(przebieg)?.id ?? null;
-  const sesja = {
-    ...stan.sesja,
-    zmieniono: czas,
-    biezacePytanieId,
-    decyzje: [...przebieg.decyzje],
-    historiaDecyzji: [...przebieg.historiaDecyzji],
-    odlozonePytaniaId,
-    stan:
-      biezacePytanieId === null &&
-      odlozonePytaniaId.length === 0 &&
-      przebieg.decyzje.length === przebieg.quiz.pytania.length
-        ? ('zakonczona' as const)
-        : ('wTrakcie' as const),
-  };
-  return wznowSesje(przebieg.quiz, sesja);
+  const pytanieId = biezacePytanie(stan.przebieg)?.id;
+  const nowa = zmienione[0];
+  const kolejnosc = (stan.sesja.dziennikSesji?.zdarzenia.length ?? 0) + 1;
+  const wynikZdarzenia =
+    zmienione.length === 1 &&
+    nowa &&
+    nowa.pytanieId === pytanieId &&
+    przebieg.indeksPytania === stan.przebieg.indeksPytania
+      ? dopiszZdarzenie(przebieg.quiz, stan.sesja, {
+          rodzaj: 'decyzja',
+          kolejnosc,
+          czas: nowa.zatwierdzono,
+          pytanieId: nowa.pytanieId,
+          poprzedniaDecyzja:
+            stan.sesja.decyzje.find(
+              (decyzja) => decyzja.pytanieId === nowa.pytanieId,
+            ) ?? null,
+          nowaDecyzja: nowa,
+        })
+      : zmienione.length === 0
+        ? dopiszZdarzenie(przebieg.quiz, stan.sesja, {
+            rodzaj: 'nawigacja',
+            kolejnosc,
+            czas,
+            poprzedniePytanieId: stan.sesja.biezacePytanieId,
+            biezacePytanieId: biezacePytanie(przebieg)?.id ?? null,
+          })
+        : {
+            stan: 'blad' as const,
+            opis: 'Operacja nie odpowiada pojedynczemu zdarzeniu sesji.',
+          };
+  if (wynikZdarzenia.stan !== 'gotowy') return wynikZdarzenia;
+  if (
+    JSON.stringify(wynikZdarzenia.wartosc.decyzje) !==
+      JSON.stringify(przebieg.decyzje) ||
+    JSON.stringify(wynikZdarzenia.wartosc.historiaDecyzji) !==
+      JSON.stringify(przebieg.historiaDecyzji)
+  )
+    return {
+      stan: 'blad',
+      opis: 'Wynik operacji zawiera dane niepochodzące z dziennika.',
+    };
+  return wznowSesje(przebieg.quiz, wynikZdarzenia.wartosc);
 }
 
 export function odlozPytanie(
@@ -169,28 +218,18 @@ export function odlozPytanie(
 ): Wynik<PrzebiegSesji> {
   const pytanie = biezacePytanie(stan.przebieg);
   if (!pytanie) return { stan: 'blad', opis: 'Wybierz pytanie do odłożenia.' };
-  const poprzednie = stan.przebieg.decyzje.filter(
-    (decyzja) => decyzja.pytanieId === pytanie.id,
-  );
-  const przebieg = {
-    ...stan.przebieg,
-    indeksPytania: stan.przebieg.indeksPytania + 1,
-    decyzje: stan.przebieg.decyzje.filter(
-      (decyzja) => decyzja.pytanieId !== pytanie.id,
-    ),
-    historiaDecyzji: [...stan.przebieg.historiaDecyzji, ...poprzednie],
-  };
-  const sesja = {
-    ...stan.sesja,
-    odlozonePytaniaId: [
-      ...new Set([...stan.sesja.odlozonePytaniaId, pytanie.id]),
-    ],
-  };
-  return aktualizujSesje(
-    { ...stan, sesja },
-    { stan: 'gotowy', wartosc: przebieg },
+  const wynik = dopiszZdarzenie(stan.przebieg.quiz, stan.sesja, {
+    rodzaj: 'odlozenie',
+    kolejnosc: (stan.sesja.dziennikSesji?.zdarzenia.length ?? 0) + 1,
     czas,
-  );
+    pytanieId: pytanie.id,
+    poprzedniaDecyzja:
+      stan.sesja.decyzje.find((decyzja) => decyzja.pytanieId === pytanie.id) ??
+      null,
+  });
+  return wynik.stan === 'gotowy'
+    ? wznowSesje(stan.przebieg.quiz, wynik.wartosc)
+    : wynik;
 }
 
 export function wrocDoPytania(

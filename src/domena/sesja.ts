@@ -242,6 +242,48 @@ export const schematZmianyAdaptacyjnej = z
     }
   });
 
+export const schematMigawkiSesji = z.looseObject({
+  zmieniono: schematCzasu,
+  stan: z.enum(['wTrakcie', 'zakonczona']),
+  biezacePytanieId: schematId.nullable(),
+  decyzje: z.array(schematDecyzji),
+  historiaDecyzji: z.array(schematDecyzji),
+  odlozonePytaniaId: schematListyId,
+});
+
+const podstawaZdarzeniaSesji = {
+  kolejnosc: z.number().int().positive(),
+  czas: schematCzasu,
+};
+
+export const schematZdarzeniaSesji = z.discriminatedUnion('rodzaj', [
+  z.looseObject({
+    ...podstawaZdarzeniaSesji,
+    rodzaj: z.literal('decyzja'),
+    pytanieId: schematId,
+    poprzedniaDecyzja: schematDecyzji.nullable(),
+    nowaDecyzja: schematDecyzji,
+  }),
+  z.looseObject({
+    ...podstawaZdarzeniaSesji,
+    rodzaj: z.literal('odlozenie'),
+    pytanieId: schematId,
+    poprzedniaDecyzja: schematDecyzji.nullable(),
+  }),
+  z.looseObject({
+    ...podstawaZdarzeniaSesji,
+    rodzaj: z.literal('nawigacja'),
+    poprzedniePytanieId: schematId.nullable(),
+    biezacePytanieId: schematId.nullable(),
+  }),
+]);
+
+export const schematDziennikaSesji = z.looseObject({
+  wersja: z.literal(1),
+  baza: schematMigawkiSesji,
+  zdarzenia: z.array(schematZdarzeniaSesji),
+});
+
 export const schematSesji = z
   .looseObject({
     schemaVersion: z.literal(WERSJA_SCHEMATU),
@@ -258,6 +300,7 @@ export const schematSesji = z
     szkiceWlasnychOdpowiedzi: z.array(schematSzkicuWlasnejOdpowiedzi),
     zmianyAdaptacyjne: z.array(schematZmianyAdaptacyjnej),
     historiaZmianAdaptacyjnych: z.array(schematZmianyAdaptacyjnej),
+    dziennikSesji: schematDziennikaSesji.optional(),
   })
   .superRefine((sesja, kontekst) => {
     if (Date.parse(sesja.zmieniono) < Date.parse(sesja.utworzono))
@@ -318,6 +361,8 @@ export type Decyzja = z.infer<typeof schematDecyzji>;
 export type Adnotacja = z.infer<typeof schematAdnotacji>;
 export type ZmianaAdaptacyjna = z.infer<typeof schematZmianyAdaptacyjnej>;
 export type Sesja = z.infer<typeof schematSesji>;
+export type ZdarzenieSesji = z.infer<typeof schematZdarzeniaSesji>;
+export type MigawkaSesji = z.infer<typeof schematMigawkiSesji>;
 export type SzkicWlasnejOdpowiedzi = z.infer<
   typeof schematSzkicuWlasnejOdpowiedzi
 >;
