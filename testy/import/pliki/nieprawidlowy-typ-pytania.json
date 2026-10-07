@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "organizacja-pracy",
+  "wersjaQuizu": "1.0.0",
+  "tytul": "Wybierz sposób pracy",
+  "jezyk": "pl",
+  "liczbaPytan": 1,
+  "pytania": [
+    {
+      "id": "podzial",
+      "tresc": "Jaki podział wybierasz?",
+      "prezentacja": {
+        "rodzaj": "MULTISELECT"
+      },
+      "warianty": [
+        {
+          "id": "prosty",
+          "etykieta": "Prosty"
+        },
+        {
+          "id": "szczegolowy",
+          "etykieta": "Szczegółowy"
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "prosty",
+        "uzasadnienie": "Ułatwia rozpoczęcie."
+      }
+    }
+  ],
+  "pytaniaDodatkowe": [],
+  "reguly": []
+}

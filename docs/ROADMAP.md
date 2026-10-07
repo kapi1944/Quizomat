@@ -1,6 +1,6 @@
 # Roadmapa: etapy 0–17
 
-Etapy są granicami zakresu i kryteriami odbioru. Etap 0 jest zakończony. Aktualny zakres to wyłącznie Etap 1: model domenowy, schematy Zod, fixture'y i testy. Dalsze etapy wymagają osobnych poleceń; obecność opisu nie uruchamia implementacji ani integracji. Etap 1 kończy lokalny commit bez push.
+Etapy są granicami zakresu i kryteriami odbioru. Etapy 0 i 1 są zakończone. Aktualny zakres to wyłącznie Etap 2: standard pliku JSON, deterministyczny walidator importu, strukturalny raport, fixture'y i testy. Dalsze etapy wymagają osobnych poleceń; obecność opisu nie uruchamia implementacji ani integracji. Etap 2 kończy lokalny commit bez push. Ekran importu i trwały zapis pozostają odłożone; nie powstaje inteligentny importer ani parser swobodnego Markdownu.
 
 | Etap                              | Zakres                                                                                                                                             | Warunek zamknięcia                                                                                          |
 | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
@@ -23,4 +23,4 @@ Etapy są granicami zakresu i kryteriami odbioru. Etap 0 jest zakończony. Aktua
 | 16. Opcjonalny moduł AI           | Po wyraźnym zleceniu: osobny prywatny pośrednik, interpretacje i skutki, jawny zakres wysyłanych danych                                            | Brak klucza w PWA; awaria / offline nie blokuje zwykłego silnika; analiza nie zatwierdza decyzji            |
 | 17. Stabilizacja i odbiór PWA     | Instalacja i aktualizacje, migracje, restart, scenariusze offline, mobile / desktop, dostępność, regresja                                          | Dowody z przeglądarki i telefonu; raport ograniczeń; pełny przebieg neutralnego quizu i eksportów           |
 
-Zamknięcie Etapu 0 nie jest odbiorem gotowej aplikacji użytkowej. Etapy 1–17 są odłożone, a wdrożenie prywatnego hostingu pozostaje osobną decyzją.
+Zamknięcie etapów technicznych nie jest odbiorem gotowej aplikacji użytkowej. Etapy 3–17 są odłożone, a wdrożenie prywatnego hostingu pozostaje osobną decyzją.

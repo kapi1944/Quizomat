@@ -1,8 +1,10 @@
 # Format quizu JSON — kontrakt 1.0.0
 
-Status: Etap 1 — model domenowy i schematy Zod zaimplementowane w `src/domena/quiz.ts` oraz `src/domena/sesja.ts`. Typy TypeScript są wyprowadzane przez `z.infer`, więc nie ma równoległego ręcznego modelu. Nie ma importera plików, magazynu, silnika ani nowych ekranów UI. Schematy przyjmują już odczytane dane przez `parse` / `safeParse`.
+Status: Etap 2 — standard pliku JSON i deterministyczna walidacja importu w `src/import/walidator.ts`. Model domenowy i schematy Zod są w `src/domena/quiz.ts` oraz `src/domena/sesja.ts`; typy pochodzą z `z.infer`. Nie ma magazynu, silnika ani nowych ekranów UI. Walidator przyjmuje tekst odczytanego pliku i zwraca raport, nie zapisuje ani automatycznie nie zatwierdza danych.
 
 Quiz zawiera treść i reguły. Sesja zawiera decyzje konkretnego użytkownika. Raport i eksport JSON mają osobne wersjonowane obwiednie; nie mieszamy ich z plikiem źródłowym quizu. Nie używamy nazw ani reguł zależnych od konkretnego zastosowania.
+
+MVP importuje wyłącznie plik JSON zawierający obiekt quizu bez dodatkowej obwiedni `quiz`. Markdown jest formatem autorskim / eksportowym, nie formatem wejścia obecnego importera. Nie przyjmujemy swobodnego Markdownu, bloków kodu otaczających JSON, komentarzy ani końcowych przecinków. Brakujące pola nie są uzupełniane; `tytul` jest nazwą quizu, a nie aliasem zgadywanym z pól `nazwa` lub `title`.
 
 ## Wersje i pola główne
 
@@ -68,7 +70,7 @@ Zasób zawiera `id`, `opisAlternatywny` (niepusty tekst) oraz jedno źródło:
 - `dane`: data URL obrazu PNG / JPEG / WebP — zawartość trafia docelowo do lokalnego magazynu po zatwierdzeniu importu,
 - albo `url`: absolutny adres HTTPS — import informuje o zależności sieciowej; obraz musi zostać zapisany lokalnie, aby był dostępny offline.
 
-Nie przyjmujemy skryptów, aktywnego HTML, wykonywalnego SVG ani lokalnych ścieżek plików użytkownika. Schemat odrzuca jednoczesne `url` i `dane`, sprawdza HTTPS lub składnię niepustego base64 dla dozwolonego MIME oraz unikalność ID obrazów w pytaniu. Nie dekoduje pliku, nie potwierdza rzeczywistego MIME, nie pobiera URL i nie gwarantuje dostępności offline. Te kontrole oraz limity rozmiarów należą do przyszłego importera. Teksty mają być renderowane jako tekst. Brak możliwości pobrania obrazu będzie jawnym ostrzeżeniem lub błędem, jeśli bez niego pytanie wizualne nie jest użyteczne. Użytkownik nie może otrzymać deklaracji pełnej gotowości offline przy brakujących zasobach.
+Nie przyjmujemy skryptów, aktywnego HTML, wykonywalnego SVG ani lokalnych ścieżek plików użytkownika. Schemat odrzuca jednoczesne `url` i `dane`, sprawdza HTTPS lub składnię niepustego base64 dla dozwolonego MIME oraz unikalność ID obrazów w pytaniu. Nie dekoduje pliku, nie potwierdza rzeczywistego MIME, nie pobiera URL i nie gwarantuje dostępności offline. Etap 2 jawnie raportuje te ograniczenia jako `ZASOB_ZDALNY` albo `ZASOB_NIEZDEKODOWANY`; taki wynik wymaga potwierdzenia ostrzeżeń. Kontrole dekodowania, dostępności i limity zasobów pozostają do wdrożenia przy obsłudze lokalnych zasobów. Teksty mają być renderowane jako tekst. Użytkownik nie otrzymuje deklaracji pełnej gotowości offline przy niezweryfikowanych zasobach.
 
 ## Reguły adaptacyjne
 
@@ -202,7 +204,35 @@ Przykład pokazuje osobne prezentacje i sposoby odpowiedzi oraz dodanie pytania.
 
 ## Raport importu i zgodność
 
-Najpierw odczyt i raport, następnie decyzja. Raport przedstawia rozpoznaną wersję, ID quizu, liczby pytań, dodatkowe pytania, liczbę wariantów dla każdego pytania oraz listy błędów i ostrzeżeń. Każda pozycja ma ścieżkę pola (np. `pytania[0].rekomendacja.wariantId`), kod problemu i opis po polsku. Zatwierdzenie bez błędów zapisuje całość transakcyjnie; anulowanie nie zmienia biblioteki.
+Najpierw odczyt i raport, następnie decyzja. Walidator `walidujImportQuizu(tekst: string)` zwraca `WynikImportu` z `stan`, `raport`, `quiz` i `daneZrodlowe`. Żaden z wyników nie oznacza wykonania zapisu:
+
+- `zablokowany`: co najmniej jeden błąd krytyczny; `quiz: null`,
+- `wymagaPotwierdzeniaOstrzezen`: poprawny kandydat, lecz wymagane świadome potwierdzenie ostrzeżeń,
+- `gotowyDoZatwierdzenia`: poprawny kandydat bez ostrzeżeń, nadal czekający na decyzję użytkownika.
+
+`daneZrodlowe` zachowuje odczytany obiekt wraz z rozszerzeniami; przy błędzie składni wynosi null. `quiz` jest typowanym wynikiem kanonicznego schematu Zod i jest dostępny tylko bez błędów krytycznych. Raport i kandydat mają zostać pokazani / użyci przez przyszłe UI importu, nie przez normalny ekran quizu. Trwały zapis, transakcja i zatwierdzanie w bibliotece należą do dalszego etapu.
+
+Struktura `RaportImportu`:
+
+| Pole                                                 | Znaczenie                                                                                                                          |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `schemaVersion`, `quizId`, `nazwaQuizu`              | Odczytane tekstowe metadane, null jeśli brakuje wartości lub typ jest inny; nie są dowodem poprawności                             |
+| `deklarowanePytania`                                 | Dodatnia bezpieczna liczba całkowita z `liczbaPytan`; inaczej null, bez konwersji                                                  |
+| `faktycznePytania`                                   | Długość bazowej tablicy; obejmuje też błędne wpisy; null, jeśli nie ma tablicy                                                     |
+| `poprawnePytania`                                    | Bazowe pytania poprawne lokalnie według schematu, bez powtórzonego ID między pytaniami ani powtórzonego pola JSON wewnątrz pytania |
+| `liczbaPytanDodatkowych`, `poprawnePytaniaDodatkowe` | Analogiczne liczniki puli dodatkowej; nie są doliczane do deklaracji bazowej                                                       |
+| `pytania`                                            | Lista `{ pula, indeks, id, liczbaWariantow, poprawne }`; pula `bazowa` / `dodatkowa`, indeks od 0                                  |
+| `bledy`                                              | Problemy o poziomie `bladKrytyczny`, blokujące kandydata                                                                           |
+| `ostrzezenia`                                        | Problemy o poziomie `ostrzezenie`, wymagające świadomego potwierdzenia                                                             |
+| `informacje`                                         | Komunikaty o poziomie `informacja`, bez blokowania                                                                                 |
+
+Każdy `ProblemImportu` ma `poziom`, stabilny `kod`, `sciezka` jako tablicę kluczy / indeksów (np. `["pytania", 0, "rekomendacja", "wariantId"]`) i polski `opis`. Pusta ścieżka oznacza cały dokument. Błędy i ostrzeżenia są deduplikowane po ścieżce i kodzie oraz uporządkowane leksykograficznie według ich zapisu JSON, bez zależności od czasu, losowości i ustawień regionalnych. Kolejność pytań i reguł pozostaje kolejnością danych.
+
+Przykładowe kody: `NIEPOPRAWNY_JSON`, `NIEOBSLUGIWANA_WERSJA`, `NIEZGODNA_LICZBA_PYTAN`, `POWTORZONE_ID`, `POWTORZONE_POLE_JSON`, `NIEPRAWIDLOWY_TYP`, `NIEZGODNOSC_DOMENOWA`, `NIEDOZWOLONE_POLE`. Pozostałe błędy strukturalne mają kod `SCHEMAT_` i kod Zod wielkimi literami. Ostrzeżenia: `NIEZNANE_POLE`, `NIEWYKORZYSTANE_WARIANTY`, `NIEWYKORZYSTANE_PYTANIE_DODATKOWE`, `ZASOB_ZDALNY`, `ZASOB_NIEZDEKODOWANY`. Informacja `PODSUMOWANIE_KONTROLI` wskazuje brak zapisu / wykonania reguł; `DEFINICJA_NIEPOTWIERDZONA` wyjaśnia, że przy błędach strukturalnych nie da się potwierdzić całego zestawu relacji.
+
+Licznik poprawnych pytań nie oznacza poprawności quizu: np. deklaracja 20 przy 18 poprawnych pytaniach nadal blokuje import. Również błędna reguła może blokować definicję przy lokalnie poprawnych pytaniach. Każda zmiana pliku wymaga ponownej walidacji, a nie naprawy na podstawie raportu.
+
+`JSON.parse` sprawdza składnię. Dodatkowa kontrola blokuje powtórzone pola obiektu JSON (również nazwy zapisane różnymi escape'ami), ponieważ standardowy parser wybrałby ostatnią wartość. Nie zmieniamy pliku ani nie wybieramy wersji pola. Nieznane pola są rozpoznawane na podstawie samych schematów Zod, z uwzględnieniem jawnego dyskryminatora konfiguracji; nie tworzymy drugiej ręcznej definicji formatu.
 
 Kontrole obejmują strukturę / typy Zod i semantykę: zgodność wersji, ID i unikalność, liczby, odwołania, rekomendacje, konfiguracje sposobów odpowiedzi, reguły / konflikty i zasoby. Nie dokonujemy automatycznej konwersji typów, np. `"3"` na liczbę. Nieznane pola raportujemy jako ostrzeżenia i zachowujemy w źródle po potwierdzeniu; nie uruchamiamy ich znaczenia. Nieznana `schemaVersion` blokuje import do czasu jawnej obsługi lub migracji. Migracja ma raport zmian i wymaga zatwierdzenia.
 
@@ -281,8 +311,10 @@ Schemat sprawdza zgodność ID, rodzaju i powodu z kopią reguły, obecność za
 
 Schemat definicji quizu sprawdza strukturę i opisane wyżej statyczne relacje danych. Samodzielne schematy odpowiedzi / sesji sprawdzają ich strukturę i wewnętrzne relacje, lecz nie mają definicji wskazanego quizu. Nie potwierdzają więc istnienia wszystkich ID w obcym quizie, zgodności odpowiedzi z jego wymaganymi mechanikami, liczby wybranych wariantów, zakresu / kroku oceny, długości tekstu względem konfiguracji ani prawdziwości warunku konkretnej zmiany. Te kontrole wymagają kontekstu quizu i zostaną wykorzystane przy wdrożeniu silnika / sesji. Obecny model nie oblicza ścieżki, nie wykonuje reguł, nie zatwierdza ani nie zapisuje decyzji.
 
-Schematy zachowują nieznane pola przez `z.looseObject` (wyjątek: zamknięta lista pól modyfikacji). Samo zachowanie rozszerzenia nie oznacza obsługi jego znaczenia. Raportowanie ostrzeżeń o tych polach należy do importera z Etapu 2. Nie ma cichej konwersji typów, automatycznej migracji ani domyślnych wartości uzupełniających brakujące dane. Teksty nie są przycinane ani nadpisywane. Sposób komponowania schematów odpowiada [API Zod](https://zod.dev/api).
+Schematy zachowują nieznane pola przez `z.looseObject` (wyjątek: zamknięta lista pól modyfikacji). Samo zachowanie rozszerzenia nie oznacza obsługi jego znaczenia. Walidator Etapu 2 raportuje ostrzeżenia o takich polach i zachowuje cały odczytany obiekt w `daneZrodlowe`. Nie ma cichej konwersji typów, automatycznej migracji ani domyślnych wartości uzupełniających brakujące dane. Teksty nie są przycinane ani nadpisywane. Sposób komponowania schematów odpowiada [API Zod](https://zod.dev/api).
 
 Neutralne fixture'y w `testy/domena/przyklady.ts`: minimalny quiz tekstowy, pytanie wizualne, pytanie wielokrotnego wyboru + skala wariantów + komentarz + kombinacja, pełna decyzja z adnotacją, quiz adaptacyjny i sesja. Nie są zawartością produkcyjnej biblioteki.
+
+Pliki fixture'ów standardu importu w `testy/import/pliki`: `poprawny.json`, `brak-id.json`, `duplikat-id.json`, `zla-liczba-pytan.json`, `bledna-rekomendacja.json`, `nieistniejace-odwolanie.json`, `nieprawidlowy-typ-pytania.json`, `uszkodzona-skala.json`. Są danymi testowymi; błędne pliki nie są przeznaczone do biblioteki.
 
 Raport będzie mieć osobną wersję oraz referencję do sesji / quizu. Zawierać będzie komplet decyzji, ich opisowe znaczenie, konsekwencje, rekomendacje autora, jawne zmiany, wybrane fragmenty i nierozstrzygnięte kwestie. Specyfikacja wynikowa użyje tylko aktualnych zatwierdzonych decyzji. Schemat raportu i eksport są odłożone; nie traktujemy pliku quizu jako zamiennika eksportu sesji.

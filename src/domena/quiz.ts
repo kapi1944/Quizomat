@@ -138,6 +138,7 @@ export function sprawdzUnikalnosc(
         code: 'custom',
         path: [...sciezka, indeks],
         message: `Powtórzone ID: ${identyfikator}.`,
+        params: { kod: 'POWTORZONE_ID' },
       });
     napotkane.add(identyfikator);
   });
@@ -316,6 +317,7 @@ export const schematQuizu = z
         code: 'custom',
         path: ['liczbaPytan'],
         message: 'Deklarowana liczba pytań różni się od faktycznej.',
+        params: { kod: 'NIEZGODNA_LICZBA_PYTAN' },
       });
     const wszystkiePytania = [...quiz.pytania, ...quiz.pytaniaDodatkowe];
     const pytaniaPoId = new Map(
@@ -337,6 +339,7 @@ export const schematQuizu = z
           code: 'custom',
           path: ['pytaniaDodatkowe', indeks, 'id'],
           message: 'ID pytania powtarza się między pulami.',
+          params: { kod: 'POWTORZONE_ID' },
         });
     });
     sprawdzUnikalnosc(

@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "organizacja-pracy",
+  "wersjaQuizu": "1.0.0",
+  "tytul": "Wybierz sposób pracy",
+  "jezyk": "pl",
+  "liczbaPytan": 1,
+  "pytania": [
+    {
+      "id": "podzial",
+      "tresc": "Jaki podział wybierasz?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "prosty",
+          "etykieta": "Prosty"
+        },
+        {
+          "id": "szczegolowy",
+          "etykieta": "Szczegółowy"
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "prosty",
+        "uzasadnienie": "Ułatwia rozpoczęcie."
+      }
+    }
+  ],
+  "pytaniaDodatkowe": [
+    {
+      "id": "nazwy",
+      "tresc": "Podaj nazwy kategorii.",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "nazwy",
+          "rodzaj": "otwarta",
+          "wymagany": true,
+          "maksymalnaDlugosc": 1000
+        }
+      ]
+    }
+  ],
+  "reguly": [
+    {
+      "id": "doprecyzuj",
+      "powod": "Potrzebne są nazwy kategorii.",
+      "warunek": {
+        "pytanieId": "nieznany",
+        "sposobId": "wybor",
+        "operator": "rowne",
+        "wartosc": "szczegolowy"
+      },
+      "operacja": {
+        "rodzaj": "dodaj",
+        "pytanieId": "nazwy",
+        "poPytaniuId": "podzial"
+      }
+    }
+  ]
+}
