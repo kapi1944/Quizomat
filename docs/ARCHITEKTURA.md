@@ -2,23 +2,23 @@
 
 **Quizomat jest silnikiem uniwersalnym, a konkretne quizy są danymi.**
 
-Stan Etapu 0: działa shell i konfiguracja narzędzi / PWA. Poniższe granice modułów opisują docelowy podział odpowiedzialności. Katalogi bez implementacji mają tylko opis zakresu; nie tworzymy pustych usług ani globalnych warstw.
+Stan Etapu 1: działa shell i konfiguracja narzędzi / PWA oraz model domenowy ze schematami Zod. Poniższe granice modułów opisują docelowy podział odpowiedzialności. Katalogi bez implementacji mają tylko opis zakresu; nie tworzymy pustych usług ani globalnych warstw. Nie implementujemy silnika, importera ani UI kolejnych etapów.
 
 ## Moduły
 
-| Katalog          | Odpowiedzialność                                                   | Stan Etapu 0               |
-| ---------------- | ------------------------------------------------------------------ | -------------------------- |
-| `src/aplikacja`  | Routing, składanie ekranów, styl powłoki                           | Shell                      |
-| `src/komponenty` | Małe współdzielone elementy UI                                     | Placeholder, komunikat PWA |
-| `src/domena`     | Wersjonowane modele quizu, decyzji, sesji i raportu                | Granice opisane            |
-| `src/silnik`     | Czyste obliczanie ścieżki, jawne reguły, przeliczenie decyzji      | Odłożony                   |
-| `src/import`     | Parsowanie, Zod, kontrola semantyczna, raport przed zatwierdzeniem | Odłożony                   |
-| `src/dane`       | Lokalny zapis quizów, sesji, ustawień i migracje                   | Odłożony                   |
-| `src/eksport`    | Generowanie TXT / Markdown / JSON / PDF z raportu                  | Odłożony                   |
-| `src/ai`         | Opcjonalna analiza przez prywatnego pośrednika                     | Odłożony, bez integracji   |
-| `testy`          | Testy niezależne od kodu produkcyjnego                             | Shell / routing            |
-| `public`         | Lokalne ikony i statyczne zasoby PWA                               | Gotowe                     |
-| `docs`           | Kontrakt, architektura, etapy i format                             | Gotowe                     |
+| Katalog          | Odpowiedzialność                                                   | Stan Etapu 1                                   |
+| ---------------- | ------------------------------------------------------------------ | ---------------------------------------------- |
+| `src/aplikacja`  | Routing, składanie ekranów, styl powłoki                           | Shell                                          |
+| `src/komponenty` | Małe współdzielone elementy UI                                     | Placeholder, komunikat PWA                     |
+| `src/domena`     | Wersjonowane modele quizu, decyzji, sesji i raportu                | Schematy quizu / sesji i typy; raport odłożony |
+| `src/silnik`     | Czyste obliczanie ścieżki, jawne reguły, przeliczenie decyzji      | Odłożony                                       |
+| `src/import`     | Parsowanie, Zod, kontrola semantyczna, raport przed zatwierdzeniem | Odłożony                                       |
+| `src/dane`       | Lokalny zapis quizów, sesji, ustawień i migracje                   | Odłożony                                       |
+| `src/eksport`    | Generowanie TXT / Markdown / JSON / PDF z raportu                  | Odłożony                                       |
+| `src/ai`         | Opcjonalna analiza przez prywatnego pośrednika                     | Odłożony, bez integracji                       |
+| `testy`          | Testy niezależne od kodu produkcyjnego                             | Shell / routing oraz schematy domenowe         |
+| `public`         | Lokalne ikony i statyczne zasoby PWA                               | Gotowe                                         |
+| `docs`           | Kontrakt, architektura, etapy i format                             | Gotowe                                         |
 
 ## Kierunek zależności
 

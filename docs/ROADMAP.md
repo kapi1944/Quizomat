@@ -1,6 +1,6 @@
 # Roadmapa: etapy 0–17
 
-Etapy są granicami zakresu i kryteriami odbioru. W tym zadaniu realizujemy wyłącznie Etap 0. Dalsze etapy wymagają osobnych poleceń; obecność opisu nie uruchamia implementacji ani integracji.
+Etapy są granicami zakresu i kryteriami odbioru. Etap 0 jest zakończony. Aktualny zakres to wyłącznie Etap 1: model domenowy, schematy Zod, fixture'y i testy. Dalsze etapy wymagają osobnych poleceń; obecność opisu nie uruchamia implementacji ani integracji. Etap 1 kończy lokalny commit bez push.
 
 | Etap                              | Zakres                                                                                                                                             | Warunek zamknięcia                                                                                          |
 | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |

@@ -2,9 +2,9 @@
 
 Prywatna, uniwersalna aplikacja PWA wspomagająca podejmowanie decyzji projektowych. Konkretne quizy są danymi, a ich treść pozostaje oddzielona od aplikacji.
 
-## Stan: Etap 0
+## Stan: Etap 1
 
-Dostępne: responsywny shell React, nawigacja Start / Biblioteka / Import / Ustawienia, manifest, ikony, cache powłoki offline i komunikat aktualizacji PWA. Biblioteka, import i ustawienia są placeholderami. Silnik quizu, zapis danych użytkownika, raporty, eksport i AI nie są jeszcze zaimplementowane.
+Dostępne: responsywny shell React, nawigacja Start / Biblioteka / Import / Ustawienia, manifest, ikony, cache powłoki offline i komunikat aktualizacji PWA. Etap 1 dodaje kompozycyjny model domenowy i schematy Zod quizu / odpowiedzi / sesji, neutralne fixture'y i testy. Biblioteka, import i ustawienia są placeholderami. Silnik quizu, zapis danych użytkownika, raporty, eksport i AI nie są jeszcze zaimplementowane.
 
 ## Uruchomienie
 
