@@ -6,4 +6,6 @@ Obsługiwane jest tekstowe pytanie z jednym sposobem `pojedynczyWybor`. Wybór t
 
 Wynik operacji jawnie rozróżnia `gotowy`, `blad` i `nieobslugiwane`. Pozostałe mechaniki, kompozycje sposobów oraz prezentacje z obrazami otrzymują odmowę wykonania. Definicja z regułami adaptacyjnymi nie uruchamia się: reguły nie są ignorowane. `innaOdpowiedz` nie blokuje standardowego wyboru, ale własna odpowiedź zawsze otrzymuje odmowę i nie staje się zwykłym wariantem.
 
-Stan i historia pozostają tylko w pamięci ekranu. Trwałe sesje, odłożenie, replay historii, adaptacja i przepływ szkic → analiza → potwierdzenie pozostają poza Etapem 4. Funkcje przejść i jawne metadane zdarzeń stanowią fundament kolejnych etapów; nie tworzymy drugiego modelu odpowiedzi ani bazy danych.
+Etap 5: `sesja.ts` wiąże stan runtime z istniejącym modelem domenowym `Sesja`. Czyste funkcje tworzą sesję, walidują jej wznowienie, odwzorowują zmiany runtime oraz obsługują odłożenie i powrót. Sesja przechowuje referencję do wersji definicji, decyzje, aktualne pytanie i odłożone ID. Odłożenie nie jest odpowiedzią; po dojściu do końca zestawu sesja z odłożonymi pytaniami nadal ma `stan: "wTrakcie"`. Powrót do pytania nie usuwa go z listy. Dopiero poprawny wybór rozstrzyga odłożone pytanie.
+
+Silnik nadal nie zna IndexedDB ani Reacta. Zapis i autosave organizują warstwy danych oraz aplikacji. Pełna historia zmian / replay, adaptacja i przepływ szkic → analiza → potwierdzenie pozostają odłożone. Istniejące pola historii zachowują poprzednie decyzje, bez nowego systemu historii ani jego UI.

@@ -69,7 +69,7 @@ export function Aplikacja() {
           />
           <Trasa path="/biblioteka" element={<Biblioteka />} />
           <Trasa path="/import" element={<ImportQuizu />} />
-          <Trasa path="/quiz/:quizId" element={<EkranQuizu />} />
+          <Trasa path="/sesja/:sesjaId" element={<EkranQuizu />} />
           <Trasa path="/ustawienia" element={<Ustawienia />} />
           <Trasa
             path="*"

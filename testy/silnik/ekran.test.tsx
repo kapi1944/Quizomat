@@ -1,8 +1,13 @@
-import { IDBFactory as FabrykaBazy } from 'fake-indexeddb';
+import {
+  IDBFactory as FabrykaBazy,
+  IDBObjectStore as Magazyn,
+} from 'fake-indexeddb';
 import {
   render as pokaz,
   screen as ekran,
   within as wewnatrz,
+  waitFor as poczekaj,
+  cleanup as posprzataj,
 } from '@testing-library/react';
 import uzytkownik from '@testing-library/user-event';
 import { MemoryRouter as Router } from 'react-router-dom';
@@ -21,6 +26,7 @@ import {
 } from '../../src/dane/biblioteka';
 import { walidujImportQuizu } from '../../src/import/walidator';
 import { quizTekstowy } from '../domena/przyklady';
+import { odczytajSesje } from '../../src/dane/sesje';
 
 const quiz = {
   ...quizTekstowy,
@@ -50,6 +56,20 @@ poKazdym(() => {
   localStorage.clear();
 });
 
+async function poczekajNaZapis() {
+  await poczekaj(() =>
+    oczekuj(ekran.queryByText('Zapisywanie postępu…')).not.toBeInTheDocument(),
+  );
+}
+
+async function kliknij(
+  osoba: ReturnType<typeof uzytkownik.setup>,
+  element: HTMLElement,
+) {
+  await osoba.click(element);
+  await poczekajNaZapis();
+}
+
 async function otworz(dane: unknown = quiz, sciezka = '/biblioteka') {
   await zapiszZatwierdzonyQuiz(walidujImportQuizu(JSON.stringify(dane)));
   pokaz(
@@ -59,13 +79,204 @@ async function otworz(dane: unknown = quiz, sciezka = '/biblioteka') {
   );
   const osoba = uzytkownik.setup();
   if (sciezka === '/biblioteka')
-    await osoba.click(
-      await ekran.findByRole('link', { name: 'Rozpocznij quiz' }),
+    await kliknij(
+      osoba,
+      await ekran.findByRole('button', { name: 'Rozpocznij nową' }),
     );
   return osoba;
 }
 
 opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
+  sprawdz(
+    'restart przywraca dokładnie tę samą sesję, miejsce i wybraną odpowiedź',
+    async () => {
+      const osoba = await otworz();
+      await kliknij(
+        osoba,
+        await ekran.findByRole('button', { name: 'Wybierz: Czwarty' }),
+      );
+      await kliknij(osoba, ekran.getByRole('button', { name: 'Dalej' }));
+      const zapisane = (await odczytajSesje())[0]!;
+      oczekuj(zapisane.biezacePytanieId).toBe('drugie');
+      posprzataj();
+      pokaz(
+        <Router initialEntries={[`/sesja/${zapisane.id}`]}>
+          <Aplikacja />
+        </Router>,
+      );
+      oczekuj(
+        await ekran.findByRole('heading', { name: 'Kolejne pytanie?' }),
+      ).toHaveFocus();
+      oczekuj((await odczytajSesje())[0]).toEqual(zapisane);
+      await kliknij(osoba, ekran.getByRole('button', { name: 'Wstecz' }));
+      oczekuj(
+        ekran.getByRole('button', { name: 'Wybierz: Czwarty' }),
+      ).toHaveAttribute('aria-pressed', 'true');
+      await kliknij(
+        osoba,
+        ekran.getByRole('link', { name: 'Wróć do Biblioteki' }),
+      );
+      await kliknij(
+        osoba,
+        await ekran.findByRole('link', { name: 'Kontynuuj' }),
+      );
+      oczekuj(
+        await ekran.findByRole('button', { name: 'Wybierz: Czwarty' }),
+      ).toHaveAttribute('aria-pressed', 'true');
+      oczekuj(await odczytajSesje()).toHaveLength(1);
+    },
+  );
+
+  sprawdz(
+    'Biblioteka pozwala niezależnie kontynuować dwie sesje tej samej definicji',
+    async () => {
+      const osoba = await otworz();
+      await kliknij(
+        osoba,
+        await ekran.findByRole('button', { name: 'Wybierz: Prosty' }),
+      );
+      const pierwsza = (await odczytajSesje())[0]!;
+      await kliknij(
+        osoba,
+        ekran.getByRole('link', { name: 'Wróć do Biblioteki' }),
+      );
+      await kliknij(
+        osoba,
+        await ekran.findByRole('button', { name: 'Rozpocznij nową' }),
+      );
+      await kliknij(
+        osoba,
+        await ekran.findByRole('button', { name: 'Wybierz: Czwarty' }),
+      );
+      await kliknij(
+        osoba,
+        ekran.getByRole('link', { name: 'Wróć do Biblioteki' }),
+      );
+      const lista = await ekran.findByRole('list', {
+        name: `Niedokończone sesje: ${quiz.tytul}`,
+      });
+      const odnosniki = wewnatrz(lista).getAllByRole('link', {
+        name: 'Kontynuuj',
+      });
+      oczekuj(odnosniki).toHaveLength(2);
+      await kliknij(
+        osoba,
+        odnosniki.find(
+          (element) => element.getAttribute('href') === `/sesja/${pierwsza.id}`,
+        )!,
+      );
+      oczekuj(
+        await ekran.findByRole('button', { name: 'Wybierz: Prosty' }),
+      ).toHaveAttribute('aria-pressed', 'true');
+      oczekuj(await odczytajSesje()).toHaveLength(2);
+    },
+  );
+
+  sprawdz(
+    'odłożenie przetrwa restart i blokuje zakończenie do udzielenia odpowiedzi',
+    async () => {
+      const osoba = await otworz();
+      await kliknij(
+        osoba,
+        await ekran.findByRole('button', { name: 'Wróć później' }),
+      );
+      oczekuj(
+        ekran.getByRole('heading', { name: 'Kolejne pytanie?' }),
+      ).toHaveFocus();
+      oczekuj((await odczytajSesje())[0]?.odlozonePytaniaId).toEqual([
+        'podzial',
+      ]);
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: 'Wybierz: Prosty' }),
+      );
+      await kliknij(osoba, ekran.getByRole('button', { name: 'Dalej' }));
+      oczekuj(
+        ekran.getByRole('heading', { name: 'Pytania odłożone' }),
+      ).toHaveFocus();
+      const sesja = (await odczytajSesje())[0]!;
+      oczekuj(sesja.stan).toBe('wTrakcie');
+      posprzataj();
+      pokaz(
+        <Router initialEntries={[`/sesja/${sesja.id}`]}>
+          <Aplikacja />
+        </Router>,
+      );
+      await ekran.findByRole('heading', { name: 'Pytania odłożone' });
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', {
+          name: 'Wróć do pytania: Jaki podział wybierasz?',
+        }),
+      );
+      oczekuj((await odczytajSesje())[0]?.odlozonePytaniaId).toEqual([
+        'podzial',
+      ]);
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: 'Wybierz: Czwarty' }),
+      );
+      oczekuj(
+        ekran.queryByRole('region', { name: 'Lista odłożonych pytań' }),
+      ).not.toBeInTheDocument();
+      await kliknij(osoba, ekran.getByRole('button', { name: 'Dalej' }));
+      await kliknij(osoba, ekran.getByRole('button', { name: 'Dalej' }));
+      oczekuj(
+        ekran.getByRole('heading', { name: 'Quiz zakończony' }),
+      ).toBeVisible();
+      oczekuj((await odczytajSesje())[0]?.stan).toBe('zakonczona');
+      await kliknij(
+        osoba,
+        ekran.getByRole('link', { name: 'Wróć do Biblioteki' }),
+      );
+      oczekuj(
+        await ekran.findByText('Brak niedokończonej sesji.'),
+      ).toBeVisible();
+    },
+  );
+
+  sprawdz(
+    'awaria autosave zachowuje poprzedni wybór, ostrzega i pozwala ponowić zapis',
+    async () => {
+      const osoba = await otworz();
+      await kliknij(
+        osoba,
+        await ekran.findByRole('button', { name: 'Wybierz: Prosty' }),
+      );
+      const zapisane = await odczytajSesje();
+      const oryginalnyZapis = Magazyn.prototype.put;
+      const awaria = atrapy
+        .spyOn(Magazyn.prototype, 'put')
+        .mockImplementation(function (this: IDBObjectStore, dane: unknown) {
+          const zadanie = oryginalnyZapis.call(this, dane);
+          this.transaction.abort();
+          return zadanie;
+        });
+      await osoba.click(
+        ekran.getByRole('button', { name: 'Wybierz: Czwarty' }),
+      );
+      oczekuj(await ekran.findByRole('alert')).toHaveTextContent(
+        'Nie zapisano sesji',
+      );
+      oczekuj(
+        ekran.getByRole('button', { name: 'Wybierz: Prosty' }),
+      ).toHaveAttribute('aria-pressed', 'true');
+      oczekuj(
+        ekran.queryByText('Postęp zapisany lokalnie.'),
+      ).not.toBeInTheDocument();
+      oczekuj(await odczytajSesje()).toEqual(zapisane);
+      const zamkniecie = new Event('beforeunload', { cancelable: true });
+      window.dispatchEvent(zamkniecie);
+      oczekuj(zamkniecie.defaultPrevented).toBe(true);
+      awaria.mockRestore();
+      await kliknij(osoba, ekran.getByRole('button', { name: 'Ponów zapis' }));
+      oczekuj(
+        ekran.getByRole('button', { name: 'Wybierz: Czwarty' }),
+      ).toHaveAttribute('aria-pressed', 'true');
+      oczekuj(ekran.queryByRole('alert')).not.toBeInTheDocument();
+      oczekuj(await odczytajSesje()).not.toEqual(zapisane);
+    },
+  );
   sprawdz(
     'renderuje pełną treść, cztery warianty i rekomendację bez automatycznego wyboru',
     async () => {
@@ -94,7 +305,7 @@ opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
       oczekuj(ekran.getByRole('button', { name: 'Wstecz' })).toBeDisabled();
       oczekuj(
         ekran.queryByRole('button', { name: 'Wróć później' }),
-      ).not.toBeInTheDocument();
+      ).toBeVisible();
       oczekuj(
         ekran.getByText(/Inne: odpowiedź własna jest nieobsługiwana/),
       ).toBeVisible();
@@ -110,20 +321,25 @@ opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
       });
       czwarty.focus();
       await osoba.keyboard(' ');
+      await poczekajNaZapis();
+      oczekuj(czwarty).toHaveFocus();
       oczekuj(czwarty).toHaveAttribute('aria-pressed', 'true');
       oczekuj(czwarty.closest('article')).toHaveClass('wybrany');
       oczekuj(
         ekran.getByRole('button', { name: 'Wybierz: Prosty' }),
       ).toHaveAttribute('aria-pressed', 'false');
-      await osoba.click(ekran.getByRole('button', { name: 'Dalej' }));
+      await kliknij(osoba, ekran.getByRole('button', { name: 'Dalej' }));
       oczekuj(
         ekran.getByRole('heading', { name: 'Kolejne pytanie?' }),
       ).toHaveFocus();
-      await osoba.click(ekran.getByRole('button', { name: 'Wstecz' }));
+      await kliknij(osoba, ekran.getByRole('button', { name: 'Wstecz' }));
       oczekuj(
         ekran.getByRole('button', { name: 'Wybierz: Czwarty' }),
       ).toHaveAttribute('aria-pressed', 'true');
-      await osoba.click(ekran.getByRole('button', { name: 'Wybierz: Prosty' }));
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: 'Wybierz: Prosty' }),
+      );
       const polecany = ekran.getByRole('button', { name: 'Wybierz: Prosty' });
       oczekuj(polecany.closest('article')).toHaveClass(
         'rekomendowany',
@@ -132,15 +348,16 @@ opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
       oczekuj(
         wewnatrz(polecany.closest('article')!).getByText('Twój wybór'),
       ).toBeVisible();
-      await osoba.click(ekran.getByRole('button', { name: 'Dalej' }));
-      await osoba.click(
+      await kliknij(osoba, ekran.getByRole('button', { name: 'Dalej' }));
+      await kliknij(
+        osoba,
         ekran.getByRole('button', { name: 'Wybierz: Szczegółowy' }),
       );
-      await osoba.click(ekran.getByRole('button', { name: 'Dalej' }));
+      await kliknij(osoba, ekran.getByRole('button', { name: 'Dalej' }));
       oczekuj(
         ekran.getByRole('heading', { name: 'Quiz zakończony' }),
       ).toHaveFocus();
-      await osoba.click(ekran.getByRole('button', { name: 'Wstecz' }));
+      await kliknij(osoba, ekran.getByRole('button', { name: 'Wstecz' }));
       oczekuj(
         ekran.getByRole('button', { name: 'Wybierz: Szczegółowy' }),
       ).toHaveAttribute('aria-pressed', 'true');
@@ -152,21 +369,23 @@ opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
     'zapisuje ustawienie lokalnie i ukrywa rekomendację przy uruchomieniu quizu',
     async () => {
       const osoba = await otworz(quiz, '/ustawienia');
-      await osoba.click(
+      await kliknij(
+        osoba,
         ekran.getByRole('checkbox', { name: 'Pokazuj rekomendacje' }),
       );
-      await osoba.click(ekran.getByRole('link', { name: 'Biblioteka' }));
-      await osoba.click(
-        await ekran.findByRole('link', { name: 'Rozpocznij quiz' }),
+      await kliknij(osoba, ekran.getByRole('link', { name: 'Biblioteka' }));
+      await kliknij(
+        osoba,
+        await ekran.findByRole('button', { name: 'Rozpocznij nową' }),
       );
       const przycisk = await ekran.findByRole('button', {
         name: 'Wybierz: Prosty',
       });
       oczekuj(przycisk.closest('article')).not.toHaveClass('rekomendowany');
       oczekuj(ekran.queryByText(/Rekomendacja autora/)).not.toBeInTheDocument();
-      await osoba.click(przycisk);
+      await kliknij(osoba, przycisk);
       oczekuj(przycisk).toHaveAttribute('aria-pressed', 'true');
-      await osoba.click(ekran.getByRole('link', { name: 'Ustawienia' }));
+      await kliknij(osoba, ekran.getByRole('link', { name: 'Ustawienia' }));
       oczekuj(
         ekran.getByRole('checkbox', { name: 'Pokazuj rekomendacje' }),
       ).not.toBeChecked();
@@ -198,18 +417,21 @@ opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
   );
 
   sprawdz(
-    'nie zapisuje sesji i po ponownym otwarciu rozpoczyna od początku',
+    'nowa sesja rozpoczyna od początku niezależnie od poprzedniej',
     async () => {
       const osoba = await otworz();
-      await osoba.click(
+      await kliknij(
+        osoba,
         await ekran.findByRole('button', { name: 'Wybierz: Prosty' }),
       );
-      await osoba.click(ekran.getByRole('button', { name: 'Dalej' }));
-      await osoba.click(
+      await kliknij(osoba, ekran.getByRole('button', { name: 'Dalej' }));
+      await kliknij(
+        osoba,
         ekran.getByRole('link', { name: 'Wróć do Biblioteki' }),
       );
-      await osoba.click(
-        await ekran.findByRole('link', { name: 'Rozpocznij quiz' }),
+      await kliknij(
+        osoba,
+        await ekran.findByRole('button', { name: 'Rozpocznij nową' }),
       );
       oczekuj(
         await ekran.findByRole('button', { name: 'Wybierz: Prosty' }),
@@ -221,17 +443,17 @@ opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
     'pokazuje błąd dla nieistniejącego quizu i niedostępnej Biblioteki',
     async () => {
       const widok = pokaz(
-        <Router initialEntries={['/quiz/nieistniejacy']}>
+        <Router initialEntries={['/sesja/nieistniejaca']}>
           <Aplikacja />
         </Router>,
       );
       oczekuj(await ekran.findByRole('alert')).toHaveTextContent(
-        'Nie znaleziono tego quizu',
+        'Nie znaleziono sesji',
       );
       widok.unmount();
       atrapy.stubGlobal('indexedDB', undefined);
       pokaz(
-        <Router initialEntries={['/quiz/nieistniejacy']}>
+        <Router initialEntries={['/sesja/nieistniejaca']}>
           <Aplikacja />
         </Router>,
       );

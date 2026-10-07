@@ -1,6 +1,6 @@
 # Format quizu JSON — kontrakt 1.0.0
 
-Status: Etap 4 — standard JSON i importer zachowują kontrakt 1.0.0. Model domenowy i schematy Zod są w `src/domena/quiz.ts` oraz `src/domena/sesja.ts`; typy pochodzą z `z.infer`. Walidator importu pozostaje czysty: zwraca raport, nie zapisuje ani automatycznie nie zatwierdza danych. `src/silnik/runtime.ts` dodatkowo waliduje odpowiedź względem konkretnego pytania i wykonuje tekstowy pojedynczy wybór. Pozostałe mechaniki oraz własna odpowiedź są nadal poprawnymi danymi formatu, lecz otrzymują jawną odmowę wykonania w runtime. Reguły adaptacyjne blokują uruchomienie zamiast być ignorowane. Postęp pozostaje w pamięci, bez zapisu sesji.
+Status: Etap 5 — standard JSON i importer zachowują kontrakt 1.0.0. Model domenowy i schematy Zod są w `src/domena/quiz.ts` oraz `src/domena/sesja.ts`; typy pochodzą z `z.infer`. Walidator importu pozostaje czysty: zwraca raport, nie zapisuje ani automatycznie nie zatwierdza danych. `src/silnik/runtime.ts` waliduje odpowiedź względem konkretnego pytania i wykonuje tekstowy pojedynczy wybór. Pozostałe mechaniki oraz własna odpowiedź są nadal poprawnymi danymi formatu, lecz otrzymują jawną odmowę wykonania w runtime. Reguły adaptacyjne blokują uruchomienie zamiast być ignorowane. Kanoniczne sesje są trwale zapisywane w zbiorze `sesje` istniejącej bazy `quizomat`, wersja 2, obok niezmienionego zbioru `quizy`. Format importu i wersja schematu sesji nie zmieniają się.
 
 ## Przepływ pliku i akceptacja raportu — Etap 3
 
@@ -295,6 +295,8 @@ Przykład odpowiedzi bez jednego zwycięzcy:
 ## Sesja i zmiana adaptacyjna — odrębny kontrakt 1.0.0
 
 `Sesja` ma własne `schemaVersion: "1.0.0"`, `id`, `quizId`, `wersjaQuizu`, `utworzono`, `zmieniono` (czasy ISO UTC), `stan` (`wTrakcie` / `zakonczona`) i `biezacePytanieId` (ID lub null). Wersja formatu sesji i wersja formatu quizu są osobnymi kontraktami, mimo tej samej początkowej wartości.
+
+Etap 5 wykonuje sesje liniowe. `biezacePytanieId: null` wraz z `stan: "wTrakcie"` oznacza przegląd odłożonych pytań po dojściu do końca zestawu, bez utraty listy. `stan: "zakonczona"` wymaga odpowiedzi na wszystkie pytania i pustej listy odłożonych. Sesja wskazuje istniejącą wersję definicji, bez duplikowania treści quizu; brak lub niezgodna wersja blokuje wznowienie. Pełna historia zmian odpowiedzi / replay pozostaje odłożona.
 
 Wymagane tablice (również puste):
 

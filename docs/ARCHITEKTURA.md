@@ -2,9 +2,21 @@
 
 **Quizomat jest silnikiem uniwersalnym, a konkretne quizy są danymi.**
 
-Stan Etapu 4: działa shell / PWA, model domenowy, deterministyczna walidacja JSON i ekran raportu importu. Akceptacja raportu zapisuje quiz w minimalnej lokalnej bibliotece IndexedDB. Istniejąca Biblioteka uruchamia ekran quizu oparty na niezależnym od Reacta, liniowym runtime. Postęp i historia decyzji są robocze, w pamięci. Ustawienie „Pokazuj rekomendacje” jest zapisywane w localStorage; trwałe sesje i obsługa zasobów pozostają odłożone.
+Stan Etapu 5: działa shell / PWA, model domenowy, deterministyczny importer i liniowy runtime pojedynczego wyboru. Istniejąca baza IndexedDB `quizomat` w wersji 2 przechowuje osobno definicje (`quizy`) oraz kanoniczne sesje (`sesje`). Biblioteka tworzy niezależne sesje i pozwala kontynuować niedokończone. Autosave obejmuje wybór, Dalej / Wstecz, odkładanie i powrót do odłożonego pytania. Ustawienie „Pokazuj rekomendacje” pozostaje w localStorage; zasoby i adaptacja są odłożone.
 
-Zakres Etapu 4 wynika z bieżącego polecenia: obejmuje również podstawowy ekran decyzji i rozróżnienie rekomendacji / wyboru, pierwotnie przypisane do Etapów 6–7. Szczegóły i jawne granice wykonania opisuje `src/silnik/README.md`. Importer i struktura istniejącej bazy definicji pozostają bez zmian.
+Zakres Etapu 4 objął również podstawowy ekran decyzji i rozróżnienie rekomendacji / wyboru, pierwotnie przypisane do Etapów 6–7. Szczegóły i jawne granice wykonania opisuje `src/silnik/README.md`. Etap 5 rozszerza istniejący magazyn; importer oraz zbiór definicji pozostają bez zmian.
+
+## Trwałe sesje — decyzje Etapu 5
+
+Migracja 1 → 2 dodaje zbiór `sesje` z kluczem `id` i indeksem `quizId`; nie usuwa ani nie przepisuje zbioru `quizy`. Świeża instalacja tworzy oba zbiory w tej samej bazie. Wersja IndexedDB jest niezależna od `Sesja.schemaVersion: "1.0.0"`.
+
+Nie zapisujemy kopii definicji w każdej sesji. `quizId` i `wersjaQuizu` identyfikują istniejącą, niezmienną definicję: importer używa `add`, a ponowny import tego samego ID jest blokowany. Wznowienie i zapis sprawdzają zgodność wersji i semantykę decyzji. Brak definicji lub niezgodna wersja oznacza jawny błąd, bez podmiany danych. Przyszłe zastępowanie / usuwanie definicji musi najpierw zapewnić zachowanie wersji używanych przez sesje.
+
+Adres `/sesja/:sesjaId` wskazuje konkretną sesję. Nowa sesja powstaje wyłącznie po kliknięciu „Rozpocznij nową” i zostaje zapisana przed przejściem na jej ekran. Wczytanie adresu, również w React StrictMode, nie tworzy sesji. Biblioteka pokazuje proste odnośniki „Kontynuuj” dla niedokończonych sesji; pełna historia nie powstaje.
+
+Każda zmiana sesji jest zapisywana jedną transakcją obejmującą `quizy` i `sesje`. Porównanie z poprzednim zapisanym stanem w tej samej transakcji blokuje nadpisanie zmian innej karty. Ekran aktualizuje potwierdzony stan dopiero po `oncomplete`, blokuje kolejne operacje podczas zapisu, a po błędzie zachowuje poprzedni stan i kandydata do ponowienia. Niezapisany kandydat nie jest trwały; zamknięcie / odświeżenie podczas zapisu lub błędu uruchamia ostrzeżenie `beforeunload`. Potwierdzony zapis można wznowić po restarcie. Fizyczne przerwanie procesu przed zakończeniem transakcji nie daje gwarancji zapisania rozpoczętej zmiany.
+
+„Wróć później” usuwa bieżącą decyzję odłożonego pytania i przechodzi dalej. Dotychczasowa decyzja, jeśli istniała, pozostaje w istniejącym polu historii. Odłożone ID pozostaje na liście również po powrocie do pytania; usuwa je dopiero poprawna odpowiedź. `biezacePytanieId: null` i `stan: "wTrakcie"` oznaczają koniec zestawu z odłożonymi pytaniami. Sesja może być `zakonczona` dopiero przy odpowiedziach na cały zestaw, pustej liście odłożonych i zakończeniu nawigacji. Pełna historia zmian / replay pozostaje zakresem Etapu 6 zgodnie z aktualnym poleceniem.
 
 ## Moduły
 

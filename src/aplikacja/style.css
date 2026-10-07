@@ -180,7 +180,8 @@ footer {
 .import-quizu .drugorzedny {
   margin-left: 0;
 }
-.przycisk:disabled {
+.przycisk:disabled,
+.przycisk[aria-disabled='true'] {
   opacity: 0.55;
   cursor: not-allowed;
 }

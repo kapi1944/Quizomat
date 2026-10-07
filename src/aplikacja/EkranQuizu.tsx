@@ -5,35 +5,47 @@ import {
 } from 'react';
 import { Link as Odnosnik, useParams as parametry } from 'react-router-dom';
 import { odczytajBiblioteke } from '../dane/biblioteka';
+import { odczytajSesje, zapiszSesje } from '../dane/sesje';
 import { odczytajRekomendacje } from '../dane/ustawienia';
 import {
   biezacePytanie,
   przejdzDalej,
   przejdzWstecz,
-  rozpocznijQuiz,
   sprawdzObslugePytania,
   wybierzWariant,
   wybranyWariant,
 } from '../silnik/runtime';
 import type { StanQuizu, Wynik } from '../silnik/runtime';
+import {
+  aktualizujSesje,
+  odlozPytanie,
+  wrocDoPytania,
+  wznowSesje,
+} from '../silnik/sesja';
+import type { PrzebiegSesji } from '../silnik/sesja';
 
 export function EkranQuizu() {
-  const { quizId } = parametry();
-  return <WczytanyQuiz key={quizId} quizId={quizId ?? ''} />;
+  const { sesjaId } = parametry();
+  return <WczytanyQuiz key={sesjaId} sesjaId={sesjaId ?? ''} />;
 }
 
-function WczytanyQuiz({ quizId }: { quizId: string }) {
-  const [wynik, ustawWynik] = stan<Wynik<StanQuizu> | null>(null);
+function WczytanyQuiz({ sesjaId }: { sesjaId: string }) {
+  const [wynik, ustawWynik] = stan<Wynik<PrzebiegSesji> | null>(null);
+  const [proba, ustawProbe] = stan(0);
   poZmianie(() => {
     let aktualne = true;
-    odczytajBiblioteke().then(
-      (wpisy) => {
+    Promise.all([odczytajBiblioteke(), odczytajSesje()]).then(
+      ([wpisy, sesje]) => {
         if (!aktualne) return;
-        const wpis = wpisy.find(({ quiz }) => quiz.id === quizId);
+        const sesja = sesje.find((sesja) => sesja.id === sesjaId);
+        const wpis = wpisy.find(({ quiz }) => quiz.id === sesja?.quizId);
         ustawWynik(
-          wpis
-            ? rozpocznijQuiz(wpis.quiz)
-            : { stan: 'blad', opis: 'Nie znaleziono tego quizu w Bibliotece.' },
+          wpis && sesja
+            ? wznowSesje(wpis.quiz, sesja)
+            : {
+                stan: 'blad',
+                opis: 'Nie znaleziono sesji lub jej definicji quizu.',
+              },
         );
       },
       () => {
@@ -47,14 +59,25 @@ function WczytanyQuiz({ quizId }: { quizId: string }) {
     return () => {
       aktualne = false;
     };
-  }, [quizId]);
+  }, [sesjaId, proba]);
   if (wynik?.stan === 'gotowy')
     return <PrzebiegQuizu poczatek={wynik.wartosc} />;
   return (
     <section className="panel">
       <h1>Uruchamianie quizu</h1>
       {wynik ? (
-        <p role="alert">{wynik.opis}</p>
+        <>
+          <p role="alert">{wynik.opis}</p>
+          <button
+            className="przycisk"
+            onClick={() => {
+              ustawWynik(null);
+              ustawProbe(proba + 1);
+            }}
+          >
+            Ponów odczyt
+          </button>
+        </>
       ) : (
         <p role="status">Wczytywanie quizu…</p>
       )}
@@ -65,9 +88,13 @@ function WczytanyQuiz({ quizId }: { quizId: string }) {
   );
 }
 
-function PrzebiegQuizu({ poczatek }: { poczatek: StanQuizu }) {
-  const [przebieg, ustawPrzebieg] = stan(poczatek);
+function PrzebiegQuizu({ poczatek }: { poczatek: PrzebiegSesji }) {
+  const [zapisany, ustawZapisany] = stan(poczatek);
+  const przebieg = zapisany.przebieg;
   const [blad, ustawBlad] = stan('');
+  const [oczekujacy, ustawOczekujacy] = stan<PrzebiegSesji | null>(null);
+  const [zapisywanie, ustawZapisywanie] = stan(false);
+  const trwaZapis = referencja(false);
   const [pokazuj] = stan(odczytajRekomendacje);
   const naglowek = referencja<HTMLHeadingElement>(null);
   const pytanie = biezacePytanie(przebieg);
@@ -77,22 +104,59 @@ function PrzebiegQuizu({ poczatek }: { poczatek: StanQuizu }) {
     naglowek.current?.focus();
   }, [przebieg.indeksPytania]);
 
+  poZmianie(() => {
+    if (!oczekujacy) return;
+    function ostrzez(zdarzenie: BeforeUnloadEvent) {
+      zdarzenie.preventDefault();
+      zdarzenie.returnValue = '';
+    }
+    window.addEventListener('beforeunload', ostrzez);
+    return () => window.removeEventListener('beforeunload', ostrzez);
+  }, [oczekujacy]);
+
+  async function utrwal(kandydat: PrzebiegSesji) {
+    if (trwaZapis.current) return;
+    trwaZapis.current = true;
+    ustawOczekujacy(kandydat);
+    ustawZapisywanie(true);
+    ustawBlad('');
+    try {
+      await zapiszSesje(kandydat.sesja, zapisany.sesja);
+      ustawZapisany(kandydat);
+      ustawOczekujacy(null);
+    } catch (blad) {
+      ustawBlad(blad instanceof Error ? blad.message : 'Nie zapisano sesji.');
+    } finally {
+      trwaZapis.current = false;
+      ustawZapisywanie(false);
+    }
+  }
+
+  function zastosujSesje(wynik: Wynik<PrzebiegSesji>) {
+    if (oczekujacy || trwaZapis.current) return;
+    if (wynik.stan === 'gotowy') void utrwal(wynik.wartosc);
+    else ustawBlad(wynik.opis);
+  }
+
   function zastosuj(wynik: Wynik<StanQuizu>) {
-    if (wynik.stan === 'gotowy') {
-      ustawPrzebieg(wynik.wartosc);
-      ustawBlad('');
-    } else ustawBlad(wynik.opis);
+    zastosujSesje(aktualizujSesje(zapisany, wynik, new Date().toISOString()));
   }
 
   return (
     <section className="panel ekran-quizu" aria-label={przebieg.quiz.tytul}>
       <p className="nadtytul">{przebieg.quiz.tytul}</p>
       <h1 ref={naglowek} tabIndex={-1}>
-        {pytanie?.tresc ?? 'Quiz zakończony'}
+        {pytanie?.tresc ??
+          (zapisany.sesja.stan === 'zakonczona'
+            ? 'Quiz zakończony'
+            : 'Pytania odłożone')}
       </h1>
-      <p className="informacja">
-        Postęp jest roboczy. Opuszczenie ekranu lub odświeżenie strony
-        rozpocznie quiz od nowa.
+      <p className="informacja" role="status">
+        {zapisywanie
+          ? 'Zapisywanie postępu…'
+          : oczekujacy
+            ? 'Zmiana nie została zapisana. Ekran pokazuje poprzedni poprawny stan.'
+            : 'Postęp zapisany lokalnie.'}
       </p>
       {pytanie ? (
         <>
@@ -151,6 +215,7 @@ function PrzebiegQuizu({ poczatek }: { poczatek: StanQuizu }) {
                       {wariant.wyjasnienie && <p>{wariant.wyjasnienie}</p>}
                       <button
                         className="przycisk"
+                        aria-disabled={oczekujacy !== null}
                         aria-pressed={zaznaczony}
                         aria-label={`Wybierz: ${wariant.etykieta}`}
                         onClick={() =>
@@ -180,18 +245,53 @@ function PrzebiegQuizu({ poczatek }: { poczatek: StanQuizu }) {
         </>
       ) : (
         <p role="status">
-          Odpowiedzi na wszystkie pytania zostały wybrane. Wynik pozostaje w
-          pamięci do opuszczenia ekranu.
+          {zapisany.sesja.stan === 'zakonczona'
+            ? 'Odpowiedzi na wszystkie pytania zostały zapisane.'
+            : 'Zestaw został przejrzany. Przed zakończeniem wróć do odłożonych pytań.'}
         </p>
       )}
       {blad && <p role="alert">{blad}</p>}
+      {oczekujacy && !zapisywanie && (
+        <button className="przycisk" onClick={() => void utrwal(oczekujacy)}>
+          Ponów zapis
+        </button>
+      )}
+      {zapisany.sesja.odlozonePytaniaId.length > 0 && (
+        <section aria-label="Lista odłożonych pytań">
+          <h2>Odłożone pytania</h2>
+          <ul>
+            {przebieg.quiz.pytania
+              .filter((pytanie) =>
+                zapisany.sesja.odlozonePytaniaId.includes(pytanie.id),
+              )
+              .map((pytanie) => (
+                <li key={pytanie.id}>
+                  <button
+                    className="przycisk drugorzedny"
+                    disabled={oczekujacy !== null}
+                    onClick={() =>
+                      zastosujSesje(
+                        wrocDoPytania(
+                          zapisany,
+                          pytanie.id,
+                          new Date().toISOString(),
+                        ),
+                      )
+                    }
+                  >
+                    Wróć do pytania: {pytanie.tresc}
+                  </button>
+                </li>
+              ))}
+          </ul>
+        </section>
+      )}
       <div className="nawigacja-quizu">
         <button
           className="przycisk"
-          disabled={przebieg.indeksPytania === 0}
+          disabled={przebieg.indeksPytania === 0 || oczekujacy !== null}
           onClick={() => {
-            ustawPrzebieg(przejdzWstecz(przebieg));
-            ustawBlad('');
+            zastosuj({ stan: 'gotowy', wartosc: przejdzWstecz(przebieg) });
           }}
         >
           Wstecz
@@ -199,10 +299,25 @@ function PrzebiegQuizu({ poczatek }: { poczatek: StanQuizu }) {
         {pytanie && (
           <button
             className="przycisk"
-            disabled={obsluga?.stan !== 'gotowy' || wybrany === null}
+            disabled={
+              obsluga?.stan !== 'gotowy' ||
+              wybrany === null ||
+              oczekujacy !== null
+            }
             onClick={() => zastosuj(przejdzDalej(przebieg))}
           >
             Dalej
+          </button>
+        )}
+        {pytanie && (
+          <button
+            className="przycisk drugorzedny"
+            disabled={oczekujacy !== null}
+            onClick={() =>
+              zastosujSesje(odlozPytanie(zapisany, new Date().toISOString()))
+            }
+          >
+            Wróć później
           </button>
         )}
       </div>

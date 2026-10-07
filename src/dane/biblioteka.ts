@@ -6,7 +6,7 @@ export interface WpisBiblioteki {
   daneZrodlowe: unknown;
 }
 
-function otworzBiblioteke(): Promise<IDBDatabase> {
+export function otworzBiblioteke(): Promise<IDBDatabase> {
   return new Promise((zakoncz, odrzuc) => {
     if (typeof indexedDB === 'undefined') {
       odrzuc(
@@ -17,9 +17,16 @@ function otworzBiblioteke(): Promise<IDBDatabase> {
       return;
     }
     let odrzucone = false;
-    const zadanie = indexedDB.open('quizomat', 1);
-    zadanie.onupgradeneeded = () => {
-      zadanie.result.createObjectStore('quizy', { keyPath: 'quiz.id' });
+    const zadanie = indexedDB.open('quizomat', 2);
+    zadanie.onupgradeneeded = (zdarzenie) => {
+      if (zdarzenie.oldVersion < 1)
+        zadanie.result.createObjectStore('quizy', { keyPath: 'quiz.id' });
+      if (zdarzenie.oldVersion < 2) {
+        const sesje = zadanie.result.createObjectStore('sesje', {
+          keyPath: 'id',
+        });
+        sesje.createIndex('quizId', 'quizId');
+      }
     };
     zadanie.onerror = () =>
       odrzuc(new Error('Nie można otworzyć lokalnej biblioteki.'));
