@@ -44,7 +44,7 @@ opisz('Shell Quizomatu', () => {
   );
 
   sprawdz.each([['/ustawienia', 'Ustawienia']])(
-    'pokazuje uczciwy placeholder pod adresem %s',
+    'pokazuje ustawienia pod adresem %s',
     (sciezka, tytul) => {
       pokaz(
         <Router initialEntries={[sciezka]}>
@@ -53,7 +53,7 @@ opisz('Shell Quizomatu', () => {
       );
       oczekuj(ekran.getByRole('heading', { name: tytul })).toBeVisible();
       oczekuj(
-        ekran.getByText('Ta funkcja nie jest jeszcze dostępna w Etapie 0.'),
+        ekran.getByRole('checkbox', { name: 'Pokazuj rekomendacje' }),
       ).toBeVisible();
     },
   );

@@ -48,6 +48,12 @@ export function Biblioteka() {
               <h2>{quiz.tytul}</h2>
               {quiz.opis && <p>{quiz.opis}</p>}
               <p>{quiz.pytania.length} pytań</p>
+              <Odnosnik
+                className="przycisk"
+                to={`/quiz/${encodeURIComponent(quiz.id)}`}
+              >
+                Rozpocznij quiz
+              </Odnosnik>
             </li>
           ))}
         </ul>
@@ -56,7 +62,8 @@ export function Biblioteka() {
         Importuj quiz
       </Odnosnik>
       <p className="informacja">
-        Przechodzenie quizów i sesje są w przygotowaniu.
+        Quizy uruchamiają się z roboczym postępem w pamięci. Trwałe sesje są w
+        przygotowaniu.
       </p>
     </section>
   );

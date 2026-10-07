@@ -4,7 +4,8 @@ import {
   Route as Trasa,
   Routes as Trasy,
 } from 'react-router-dom';
-import { EkranWPrzygotowaniu } from '../komponenty/EkranWPrzygotowaniu';
+import { EkranQuizu } from './EkranQuizu';
+import { Ustawienia } from './Ustawienia';
 import { KomunikatPwa } from '../komponenty/KomunikatPwa';
 import { ImportQuizu } from './ImportQuizu';
 import { Biblioteka } from './Biblioteka';
@@ -60,23 +61,16 @@ export function Aplikacja() {
                   Przejdź do biblioteki
                 </Odnosnik>
                 <p className="informacja">
-                  Import JSON i lokalna biblioteka są dostępne. Przechodzenie
-                  quizów jest w przygotowaniu.
+                  Import JSON, lokalna biblioteka i podstawowy przebieg quizów
+                  są dostępne.
                 </p>
               </section>
             }
           />
           <Trasa path="/biblioteka" element={<Biblioteka />} />
           <Trasa path="/import" element={<ImportQuizu />} />
-          <Trasa
-            path="/ustawienia"
-            element={
-              <EkranWPrzygotowaniu
-                tytul="Ustawienia"
-                opis="Tutaj ustawisz między innymi widoczność rekomendacji. Ustawienia są w przygotowaniu."
-              />
-            }
-          />
+          <Trasa path="/quiz/:quizId" element={<EkranQuizu />} />
+          <Trasa path="/ustawienia" element={<Ustawienia />} />
           <Trasa
             path="*"
             element={

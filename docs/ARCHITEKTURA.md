@@ -2,7 +2,9 @@
 
 **Quizomat jest silnikiem uniwersalnym, a konkretne quizy są danymi.**
 
-Stan Etapu 3: działa shell / PWA, model domenowy, deterministyczna walidacja JSON i ekran raportu importu. Akceptacja raportu zapisuje quiz w minimalnej lokalnej bibliotece IndexedDB. Nie implementujemy silnika ani UI przechodzenia quizu. Zapis sesji, ustawień i obsługa zasobów pozostają odłożone.
+Stan Etapu 4: działa shell / PWA, model domenowy, deterministyczna walidacja JSON i ekran raportu importu. Akceptacja raportu zapisuje quiz w minimalnej lokalnej bibliotece IndexedDB. Istniejąca Biblioteka uruchamia ekran quizu oparty na niezależnym od Reacta, liniowym runtime. Postęp i historia decyzji są robocze, w pamięci. Ustawienie „Pokazuj rekomendacje” jest zapisywane w localStorage; trwałe sesje i obsługa zasobów pozostają odłożone.
+
+Zakres Etapu 4 wynika z bieżącego polecenia: obejmuje również podstawowy ekran decyzji i rozróżnienie rekomendacji / wyboru, pierwotnie przypisane do Etapów 6–7. Szczegóły i jawne granice wykonania opisuje `src/silnik/README.md`. Importer i struktura istniejącej bazy definicji pozostają bez zmian.
 
 ## Moduły
 

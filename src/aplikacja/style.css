@@ -184,6 +184,66 @@ footer {
   opacity: 0.55;
   cursor: not-allowed;
 }
+.ustawienie-rekomendacji {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  cursor: pointer;
+}
+.ustawienie-rekomendacji input {
+  width: 24px;
+  height: 24px;
+}
+.ekran-quizu h1 {
+  font-size: clamp(1.6rem, 5vw, 2.6rem);
+}
+.warianty {
+  display: grid;
+  gap: 28px;
+  padding: 12px 4px;
+}
+.wariant {
+  min-width: 0;
+  padding: 16px;
+  border: 2px solid #dce5dc;
+  border-radius: 16px;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+.wariant h2 {
+  margin-top: 0;
+}
+.wariant h3 {
+  font-size: 1rem;
+}
+.wariant li {
+  line-height: 1.6;
+}
+.wariant.rekomendowany {
+  border-color: #c57830;
+  background: #fff8ef;
+  transform: scale(1.01);
+}
+.oznaczenie-rekomendacji {
+  color: #85450b;
+  font-weight: 600;
+}
+.wariant.wybrany {
+  border: 4px solid #187344;
+  background: #e9f8ed;
+  transform: scale(1.025);
+}
+.nawigacja-quizu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.ekran-quizu .drugorzedny {
+  margin-left: 0;
+}
 @media (max-width: 540px) {
   .dzialania-importu {
     flex-direction: column;

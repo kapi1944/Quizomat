@@ -1,6 +1,6 @@
 # Format quizu JSON — kontrakt 1.0.0
 
-Status: Etap 3 — standard JSON, deterministyczny walidator i ekran raportu przed akceptacją. Model domenowy i schematy Zod są w `src/domena/quiz.ts` oraz `src/domena/sesja.ts`; typy pochodzą z `z.infer`. Walidator pozostaje czysty: zwraca raport, nie zapisuje ani automatycznie nie zatwierdza danych. Silnik i ekran przechodzenia quizu pozostają odłożone.
+Status: Etap 4 — standard JSON i importer zachowują kontrakt 1.0.0. Model domenowy i schematy Zod są w `src/domena/quiz.ts` oraz `src/domena/sesja.ts`; typy pochodzą z `z.infer`. Walidator importu pozostaje czysty: zwraca raport, nie zapisuje ani automatycznie nie zatwierdza danych. `src/silnik/runtime.ts` dodatkowo waliduje odpowiedź względem konkretnego pytania i wykonuje tekstowy pojedynczy wybór. Pozostałe mechaniki oraz własna odpowiedź są nadal poprawnymi danymi formatu, lecz otrzymują jawną odmowę wykonania w runtime. Reguły adaptacyjne blokują uruchomienie zamiast być ignorowane. Postęp pozostaje w pamięci, bez zapisu sesji.
 
 ## Przepływ pliku i akceptacja raportu — Etap 3
 
