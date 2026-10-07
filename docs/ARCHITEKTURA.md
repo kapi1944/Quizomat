@@ -2,23 +2,23 @@
 
 **Quizomat jest silnikiem uniwersalnym, a konkretne quizy są danymi.**
 
-Stan Etapu 2: działa shell i konfiguracja narzędzi / PWA, model domenowy ze schematami Zod oraz deterministyczna walidacja tekstu pliku JSON. Poniższe granice modułów opisują docelowy podział odpowiedzialności. Katalogi bez implementacji mają tylko opis zakresu; nie tworzymy pustych usług ani globalnych warstw. Nie implementujemy silnika, trwałego zapisu ani UI kolejnych etapów.
+Stan Etapu 3: działa shell / PWA, model domenowy, deterministyczna walidacja JSON i ekran raportu importu. Akceptacja raportu zapisuje quiz w minimalnej lokalnej bibliotece IndexedDB. Nie implementujemy silnika ani UI przechodzenia quizu. Zapis sesji, ustawień i obsługa zasobów pozostają odłożone.
 
 ## Moduły
 
-| Katalog          | Odpowiedzialność                                                   | Stan Etapu 2                                          |
-| ---------------- | ------------------------------------------------------------------ | ----------------------------------------------------- |
-| `src/aplikacja`  | Routing, składanie ekranów, styl powłoki                           | Shell                                                 |
-| `src/komponenty` | Małe współdzielone elementy UI                                     | Placeholder, komunikat PWA                            |
-| `src/domena`     | Wersjonowane modele quizu, decyzji, sesji i raportu                | Schematy quizu / sesji i typy; raport odłożony        |
-| `src/silnik`     | Czyste obliczanie ścieżki, jawne reguły, przeliczenie decyzji      | Odłożony                                              |
-| `src/import`     | Parsowanie, Zod, kontrola semantyczna, raport przed zatwierdzeniem | Walidator JSON i strukturalny raport, bez UI / zapisu |
-| `src/dane`       | Lokalny zapis quizów, sesji, ustawień i migracje                   | Odłożony                                              |
-| `src/eksport`    | Generowanie TXT / Markdown / JSON / PDF z raportu                  | Odłożony                                              |
-| `src/ai`         | Opcjonalna analiza przez prywatnego pośrednika                     | Odłożony, bez integracji                              |
-| `testy`          | Testy niezależne od kodu produkcyjnego                             | Shell / routing oraz schematy domenowe                |
-| `public`         | Lokalne ikony i statyczne zasoby PWA                               | Gotowe                                                |
-| `docs`           | Kontrakt, architektura, etapy i format                             | Gotowe                                                |
+| Katalog          | Odpowiedzialność                                                   | Stan Etapu 3                                            |
+| ---------------- | ------------------------------------------------------------------ | ------------------------------------------------------- |
+| `src/aplikacja`  | Routing, składanie ekranów, styl powłoki                           | Shell, import i biblioteka                              |
+| `src/komponenty` | Małe współdzielone elementy UI                                     | Placeholder, komunikat PWA                              |
+| `src/domena`     | Wersjonowane modele quizu, decyzji, sesji i raportu                | Schematy quizu / sesji i typy; raport odłożony          |
+| `src/silnik`     | Czyste obliczanie ścieżki, jawne reguły, przeliczenie decyzji      | Odłożony                                                |
+| `src/import`     | Parsowanie, Zod, kontrola semantyczna, raport przed zatwierdzeniem | Walidator i odczyt pliku; ekran w `src/aplikacja`       |
+| `src/dane`       | Lokalny zapis quizów, sesji, ustawień i migracje                   | Minimalny zapis zaakceptowanych quizów; reszta odłożona |
+| `src/eksport`    | Generowanie TXT / Markdown / JSON / PDF z raportu                  | Odłożony                                                |
+| `src/ai`         | Opcjonalna analiza przez prywatnego pośrednika                     | Odłożony, bez integracji                                |
+| `testy`          | Testy niezależne od kodu produkcyjnego                             | Shell, domena, walidator i przepływ importu             |
+| `public`         | Lokalne ikony i statyczne zasoby PWA                               | Gotowe                                                  |
+| `docs`           | Kontrakt, architektura, etapy i format                             | Gotowe                                                  |
 
 ## Kierunek zależności
 

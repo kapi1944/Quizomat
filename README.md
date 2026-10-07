@@ -2,9 +2,9 @@
 
 Prywatna, uniwersalna aplikacja PWA wspomagająca podejmowanie decyzji projektowych. Konkretne quizy są danymi, a ich treść pozostaje oddzielona od aplikacji.
 
-## Stan: Etap 2
+## Stan: Etap 3
 
-Dostępne: responsywny shell React, nawigacja Start / Biblioteka / Import / Ustawienia, manifest, ikony, cache powłoki offline i komunikat aktualizacji PWA. Etap 1 dodał kompozycyjny model domenowy i schematy Zod. Etap 2 dodaje deterministyczny walidator tekstu pliku JSON ze strukturalnym raportem oraz fixture'y błędnych i poprawnych definicji. Biblioteka, ekran importu i ustawienia nadal są placeholderami. Silnik quizu, zapis danych użytkownika, raport decyzji, eksport i AI nie są jeszcze zaimplementowane. Markdown pozostaje formatem autorskim / eksportowym; importer go nie parsuje.
+Dostępne: shell React / PWA, kompozycyjny model domenowy Zod oraz deterministyczny walidator JSON. Etap 3 dodaje wybór pliku, czytelny raport kontroli i decyzję użytkownika. Błędy krytyczne blokują import, ostrzeżenia wymagają akceptacji. Dopiero zatwierdzenie zapisuje quiz w lokalnej bibliotece IndexedDB; błędy zapisu są widoczne. Ustawienia nadal są placeholderem. Silnik, ekran przechodzenia quizu, sesje, raport decyzji, eksport i AI pozostają odłożone. Markdown jest formatem autorskim / eksportowym; importer go nie parsuje.
 
 ## Uruchomienie
 

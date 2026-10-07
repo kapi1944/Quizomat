@@ -1,6 +1,14 @@
 # Format quizu JSON — kontrakt 1.0.0
 
-Status: Etap 2 — standard pliku JSON i deterministyczna walidacja importu w `src/import/walidator.ts`. Model domenowy i schematy Zod są w `src/domena/quiz.ts` oraz `src/domena/sesja.ts`; typy pochodzą z `z.infer`. Nie ma magazynu, silnika ani nowych ekranów UI. Walidator przyjmuje tekst odczytanego pliku i zwraca raport, nie zapisuje ani automatycznie nie zatwierdza danych.
+Status: Etap 3 — standard JSON, deterministyczny walidator i ekran raportu przed akceptacją. Model domenowy i schematy Zod są w `src/domena/quiz.ts` oraz `src/domena/sesja.ts`; typy pochodzą z `z.infer`. Walidator pozostaje czysty: zwraca raport, nie zapisuje ani automatycznie nie zatwierdza danych. Silnik i ekran przechodzenia quizu pozostają odłożone.
+
+## Przepływ pliku i akceptacja raportu — Etap 3
+
+Wybór pliku JSON → odczyt UTF-8 → parsowanie i walidacja → raport → decyzja użytkownika. Ekran pokazuje liczbę poprawnych definicji względem deklaracji, rzeczywistą liczbę pytań i różnicę względem deklaracji, osobną pulę dodatkową, błędy krytyczne, ostrzeżenia, informacje i odrzucone pytania z przyczynami. Gdy deklaracja nie jest poprawna, nagłówek używa rzeczywistej liczby albo zaznacza brak znanej liczby. ID, ścieżki i kody znajdują się w rozwijanej diagnostyce. Poprawność poszczególnych pytań nie gwarantuje poprawności całej definicji.
+
+„Anuluj” porzuca raport i wraca do biblioteki. „Popraw plik” wraca do wyboru poprawionej wersji; nie uruchamia edytora. „Kontynuuj mimo ostrzeżeń” wymaga kliknięcia i jest zablokowane przy błędach krytycznych. Dla raportu bez ostrzeżeń przycisk nosi nazwę „Zatwierdź import”. Nie importujemy częściowo poprawnych pytań z błędnego quizu.
+
+Dopiero akceptacja uruchamia transakcję IndexedDB. Sukces oznacza zakończenie transakcji; awaria pozostawia raport i możliwość ponowienia. Magazyn `quizomat`, wersja 1, przechowuje w zbiorze `quizy` definicję oraz niezmienione dane źródłowe (również pola objęte ostrzeżeniami). Klucz to ID quizu. Powtórny import tego samego ID zgłasza błąd bez zastępowania danych. Zarządzanie wersjami / zastępowanie, sesje, ustawienia i pobieranie zasobów pozostają odłożone. Lista biblioteki pokazuje treści użytkowe; nie eksponuje ID ani kodów diagnostycznych.
 
 Quiz zawiera treść i reguły. Sesja zawiera decyzje konkretnego użytkownika. Raport i eksport JSON mają osobne wersjonowane obwiednie; nie mieszamy ich z plikiem źródłowym quizu. Nie używamy nazw ani reguł zależnych od konkretnego zastosowania.
 

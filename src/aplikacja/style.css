@@ -132,6 +132,63 @@ footer {
 .aktualizacja {
   margin-top: 20px;
 }
+.wybor-pliku {
+  display: grid;
+  gap: 12px;
+  font-weight: 650;
+}
+.wybor-pliku input {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  font: inherit;
+}
+.sekcja-raportu {
+  border-top: 1px solid #dce5dc;
+  margin-top: 24px;
+}
+.sekcja-raportu ul {
+  padding-left: 20px;
+}
+.sekcja-raportu li {
+  margin-bottom: 20px;
+}
+.import-quizu h2 {
+  font-size: clamp(1.4rem, 4vw, 2rem);
+}
+.import-quizu dl {
+  display: grid;
+  gap: 8px;
+}
+.import-quizu dt {
+  font-weight: 650;
+}
+.import-quizu dd {
+  margin: 0 0 12px;
+  min-width: 0;
+}
+.import-quizu summary {
+  cursor: pointer;
+  padding: 12px 0;
+  min-height: 48px;
+}
+.dzialania-importu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.import-quizu .drugorzedny {
+  margin-left: 0;
+}
+.przycisk:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+@media (max-width: 540px) {
+  .dzialania-importu {
+    flex-direction: column;
+  }
+}
 .pomin-nawigacje {
   position: absolute;
   top: -100px;

@@ -6,6 +6,8 @@ import {
 } from 'react-router-dom';
 import { EkranWPrzygotowaniu } from '../komponenty/EkranWPrzygotowaniu';
 import { KomunikatPwa } from '../komponenty/KomunikatPwa';
+import { ImportQuizu } from './ImportQuizu';
+import { Biblioteka } from './Biblioteka';
 
 export function Aplikacja() {
   return (
@@ -58,30 +60,14 @@ export function Aplikacja() {
                   Przejdź do biblioteki
                 </Odnosnik>
                 <p className="informacja">
-                  Etap 0: fundament aplikacji. Obsługa quizów jest w
-                  przygotowaniu.
+                  Import JSON i lokalna biblioteka są dostępne. Przechodzenie
+                  quizów jest w przygotowaniu.
                 </p>
               </section>
             }
           />
-          <Trasa
-            path="/biblioteka"
-            element={
-              <EkranWPrzygotowaniu
-                tytul="Biblioteka"
-                opis="Tutaj pojawią się Twoje quizy i zapisane sesje decyzji."
-              />
-            }
-          />
-          <Trasa
-            path="/import"
-            element={
-              <EkranWPrzygotowaniu
-                tytul="Import"
-                opis="Tutaj sprawdzisz plik quizu i zapoznasz się z raportem przed zatwierdzeniem importu."
-              />
-            }
-          />
+          <Trasa path="/biblioteka" element={<Biblioteka />} />
+          <Trasa path="/import" element={<ImportQuizu />} />
           <Trasa
             path="/ustawienia"
             element={

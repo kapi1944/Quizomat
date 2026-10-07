@@ -43,20 +43,20 @@ opisz('Shell Quizomatu', () => {
     },
   );
 
-  sprawdz.each([
-    ['/import', 'Import'],
-    ['/ustawienia', 'Ustawienia'],
-  ])('pokazuje uczciwy placeholder pod adresem %s', (sciezka, tytul) => {
-    pokaz(
-      <Router initialEntries={[sciezka]}>
-        <Aplikacja />
-      </Router>,
-    );
-    oczekuj(ekran.getByRole('heading', { name: tytul })).toBeVisible();
-    oczekuj(
-      ekran.getByText('Ta funkcja nie jest jeszcze dostępna w Etapie 0.'),
-    ).toBeVisible();
-  });
+  sprawdz.each([['/ustawienia', 'Ustawienia']])(
+    'pokazuje uczciwy placeholder pod adresem %s',
+    (sciezka, tytul) => {
+      pokaz(
+        <Router initialEntries={[sciezka]}>
+          <Aplikacja />
+        </Router>,
+      );
+      oczekuj(ekran.getByRole('heading', { name: tytul })).toBeVisible();
+      oczekuj(
+        ekran.getByText('Ta funkcja nie jest jeszcze dostępna w Etapie 0.'),
+      ).toBeVisible();
+    },
+  );
 
   sprawdz('pozwala wrócić z nieistniejącego adresu na start', async () => {
     const osoba = uzytkownik.setup();
