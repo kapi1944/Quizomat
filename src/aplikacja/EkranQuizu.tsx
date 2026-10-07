@@ -33,7 +33,7 @@ function opisDecyzji(quiz: Quiz, decyzja: Decyzja | null): string {
     .map((wartosc) => {
       if (wartosc.rodzaj !== 'pojedynczyWybor') return 'Inny sposób odpowiedzi';
       return (
-        quiz.pytania
+        [...quiz.pytania, ...quiz.pytaniaDodatkowe]
           .find((pytanie) => pytanie.id === decyzja.pytanieId)
           ?.warianty.find((wariant) => wariant.id === wartosc.wariantId)
           ?.etykieta ?? 'Nieznany wariant'
@@ -176,11 +176,41 @@ function PrzebiegQuizu({ poczatek }: { poczatek: PrzebiegSesji }) {
             ? 'Zmiana nie została zapisana. Ekran pokazuje poprzedni poprawny stan.'
             : 'Postęp zapisany lokalnie.'}
       </p>
+      {zapisany.sesja.zmianyAdaptacyjne.length > 0 && (
+        <section aria-label="Zmiany adaptacyjne" aria-live="polite">
+          <h2>Zmiany adaptacyjne</h2>
+          <ul>
+            {zapisany.sesja.zmianyAdaptacyjne.map((zmiana) => (
+              <li key={zmiana.id}>
+                <p>
+                  {
+                    {
+                      dodaj: 'Pytanie dodane',
+                      modyfikuj: 'Pytanie zmodyfikowane',
+                      pomin: 'Pytanie pominięte',
+                    }[zmiana.rodzaj]
+                  }
+                  : {(zmiana.po ?? zmiana.przed)?.tresc}
+                </p>
+                <details>
+                  <summary>Dlaczego?</summary>
+                  <p>{zmiana.powod}</p>
+                  <p>Reguła: {zmiana.regulaId}</p>
+                  <p>Pytanie źródłowe: {zmiana.zrodlo.pytanie.tresc}</p>
+                  <p>
+                    Odpowiedź źródłowa:{' '}
+                    {opisDecyzji(przebieg.quiz, zmiana.zrodlo.decyzja)}
+                  </p>
+                </details>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       {pytanie ? (
         <>
           <p>
-            Pytanie {przebieg.indeksPytania + 1} z{' '}
-            {przebieg.quiz.pytania.length}
+            Pytanie {przebieg.indeksPytania + 1} z {przebieg.pytania.length}
           </p>
           {pytanie.wyjasnienie && <p>{pytanie.wyjasnienie}</p>}
           {obsluga?.stan !== 'gotowy' ? (
@@ -288,9 +318,11 @@ function PrzebiegQuizu({ poczatek }: { poczatek: PrzebiegSesji }) {
                 (decyzja) => (
                   <li key={decyzja.id}>
                     {
-                      przebieg.quiz.pytania.find(
-                        (pytanie) => pytanie.id === decyzja.pytanieId,
-                      )?.tresc
+                      [
+                        ...przebieg.quiz.pytania,
+                        ...przebieg.quiz.pytaniaDodatkowe,
+                      ].find((pytanie) => pytanie.id === decyzja.pytanieId)
+                        ?.tresc
                     }
                     : {opisDecyzji(przebieg.quiz, decyzja)} —{' '}
                     {new Date(decyzja.zatwierdzono).toLocaleString('pl-PL')}
@@ -307,9 +339,11 @@ function PrzebiegQuizu({ poczatek }: { poczatek: PrzebiegSesji }) {
               <li key={zdarzenie.kolejnosc} value={zdarzenie.kolejnosc}>
                 <p>
                   {
-                    przebieg.quiz.pytania.find(
-                      (pytanie) => pytanie.id === zdarzenie.pytanieId,
-                    )?.tresc
+                    [
+                      ...przebieg.quiz.pytania,
+                      ...przebieg.quiz.pytaniaDodatkowe,
+                    ].find((pytanie) => pytanie.id === zdarzenie.pytanieId)
+                      ?.tresc
                   }
                 </p>
                 <p>
@@ -321,6 +355,10 @@ function PrzebiegQuizu({ poczatek }: { poczatek: PrzebiegSesji }) {
                     : 'Odłożone'}
                   .
                 </p>
+                {zdarzenie.rodzaj === 'decyzja' &&
+                  !zapisany.sesja.decyzje.some(
+                    (decyzja) => decyzja.id === zdarzenie.nowaDecyzja.id,
+                  ) && <p>Zapis historyczny — nie jest aktualną decyzją.</p>}
                 <p>
                   Operacja {zdarzenie.kolejnosc} ·{' '}
                   {new Date(zdarzenie.czas).toLocaleString('pl-PL')}
@@ -338,7 +376,7 @@ function PrzebiegQuizu({ poczatek }: { poczatek: PrzebiegSesji }) {
         <section aria-label="Lista odłożonych pytań">
           <h2>Odłożone pytania</h2>
           <ul>
-            {przebieg.quiz.pytania
+            {przebieg.pytania
               .filter((pytanie) =>
                 zapisany.sesja.odlozonePytaniaId.includes(pytanie.id),
               )

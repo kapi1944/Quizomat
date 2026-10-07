@@ -1,6 +1,8 @@
 import type { Pytanie, Quiz } from '../domena/quiz';
+import { schematQuizu } from '../domena/quiz';
+import { przeliczAdaptacje } from './adaptacja';
 import { schematDecyzji, schematOdpowiedzi } from '../domena/sesja';
-import type { Decyzja, Odpowiedz } from '../domena/sesja';
+import type { Decyzja, Odpowiedz, ZmianaAdaptacyjna } from '../domena/sesja';
 
 export type Wynik<T> =
   | { stan: 'gotowy'; wartosc: T }
@@ -8,6 +10,8 @@ export type Wynik<T> =
 
 export interface StanQuizu {
   readonly quiz: Quiz;
+  readonly pytania: readonly Pytanie[];
+  readonly zmianyAdaptacyjne: readonly ZmianaAdaptacyjna[];
   readonly indeksPytania: number;
   readonly decyzje: readonly Decyzja[];
   readonly historiaDecyzji: readonly Decyzja[];
@@ -83,15 +87,17 @@ export function walidujOdpowiedz(
 }
 
 export function rozpocznijQuiz(quiz: Quiz): Wynik<StanQuizu> {
-  if (quiz.reguly.length > 0)
+  if (quiz.reguly.length > 0 && !schematQuizu.safeParse(quiz).success)
     return {
-      stan: 'nieobslugiwane',
-      opis: 'Reguły adaptacyjne są nieobsługiwane w aktualnej wersji. Nie można wykonać tego quizu z pominięciem reguł.',
+      stan: 'blad',
+      opis: 'Niepoprawna definicja quizu lub konflikt reguł.',
     };
   return {
     stan: 'gotowy',
     wartosc: {
       quiz: structuredClone(quiz),
+      pytania: structuredClone(quiz.pytania),
+      zmianyAdaptacyjne: [],
       indeksPytania: 0,
       decyzje: [],
       historiaDecyzji: [],
@@ -100,7 +106,7 @@ export function rozpocznijQuiz(quiz: Quiz): Wynik<StanQuizu> {
 }
 
 export function biezacePytanie(stan: StanQuizu): Pytanie | null {
-  return stan.quiz.pytania[stan.indeksPytania] ?? null;
+  return stan.pytania[stan.indeksPytania] ?? null;
 }
 
 export function zatwierdzDecyzje(
@@ -132,7 +138,7 @@ export function zatwierdzDecyzje(
   if (odpowiedz.stan !== 'gotowy') return odpowiedz;
   return {
     stan: 'gotowy',
-    wartosc: {
+    wartosc: przeliczAdaptacje({
       ...stan,
       decyzje: [
         ...stan.decyzje.filter(
@@ -146,7 +152,7 @@ export function zatwierdzDecyzje(
           (poprzednia) => poprzednia.pytanieId === pytanie.id,
         ),
       ],
-    },
+    }),
   };
 }
 

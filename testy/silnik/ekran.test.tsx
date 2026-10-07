@@ -88,6 +88,129 @@ async function otworz(dane: unknown = quiz, sciezka = '/biblioteka') {
 
 opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
   sprawdz(
+    'pokazuje wszystkie adaptacje i Dlaczego, odtwarza je z IndexedDB po restarcie',
+    async () => {
+      const definicja = {
+        ...quiz,
+        liczbaPytan: 3,
+        pytania: [
+          ...quiz.pytania,
+          { ...quizTekstowy.pytania[0], id: 'trzecie' },
+        ],
+        pytaniaDodatkowe: [
+          {
+            ...quizTekstowy.pytania[0],
+            id: 'dodatkowe',
+            tresc: 'Pytanie dodatkowe?',
+          },
+        ],
+        reguly: [
+          {
+            id: 'dodaj',
+            powod: 'Potrzebne doprecyzowanie.',
+            operacja: {
+              rodzaj: 'dodaj',
+              pytanieId: 'dodatkowe',
+              poPytaniuId: 'podzial',
+            },
+          },
+          {
+            id: 'zmien',
+            powod: 'Dostosowanie treści.',
+            operacja: {
+              rodzaj: 'modyfikuj',
+              pytanieId: 'drugie',
+              zmiany: { tresc: 'Dostosowane pytanie?' },
+            },
+          },
+          {
+            id: 'pomin',
+            powod: 'Odpowiedź wyklucza ten temat.',
+            operacja: { rodzaj: 'pomin', pytanieId: 'trzecie' },
+          },
+        ].map((regula) => ({
+          ...regula,
+          warunek: {
+            pytanieId: 'podzial',
+            sposobId: 'wybor',
+            operator: 'rowne',
+            wartosc: 'prosty',
+          },
+        })),
+      };
+      const osoba = await otworz(definicja);
+      await kliknij(
+        osoba,
+        await ekran.findByRole('button', { name: 'Wybierz: Prosty' }),
+      );
+      const zmiany = ekran.getByRole('region', { name: 'Zmiany adaptacyjne' });
+      for (const oznaczenie of [
+        'Pytanie dodane',
+        'Pytanie zmodyfikowane',
+        'Pytanie pominięte',
+      ])
+        oczekuj(
+          wewnatrz(zmiany).getByText(new RegExp(oznaczenie)),
+        ).toBeVisible();
+      const wyjasnienia = wewnatrz(zmiany).getAllByText('Dlaczego?', {
+        exact: true,
+      });
+      for (const wyjasnienie of wyjasnienia) await osoba.click(wyjasnienie);
+      oczekuj(
+        wewnatrz(zmiany).getByText('Potrzebne doprecyzowanie.'),
+      ).toBeVisible();
+      oczekuj(
+        wewnatrz(zmiany).getAllByText('Odpowiedź źródłowa: Prosty'),
+      ).toHaveLength(3);
+      await kliknij(osoba, ekran.getByRole('button', { name: 'Dalej' }));
+      oczekuj(
+        ekran.getByRole('heading', { level: 1, name: 'Pytanie dodatkowe?' }),
+      ).toBeVisible();
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: 'Wybierz: Prosty' }),
+      );
+      const zapis = (await odczytajSesje())[0]!;
+      posprzataj();
+      pokaz(
+        <Router initialEntries={[`/sesja/${zapis.id}`]}>
+          <Aplikacja />
+        </Router>,
+      );
+      oczekuj(
+        await ekran.findByRole('heading', {
+          level: 1,
+          name: 'Pytanie dodatkowe?',
+        }),
+      ).toBeVisible();
+      oczekuj(
+        ekran.getByRole('region', { name: 'Zmiany adaptacyjne' }),
+      ).toBeVisible();
+      oczekuj((await odczytajSesje())[0]).toEqual(zapis);
+      await kliknij(osoba, ekran.getByRole('button', { name: 'Wstecz' }));
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: 'Wybierz: Szczegółowy' }),
+      );
+      oczekuj(
+        ekran.queryByRole('region', { name: 'Zmiany adaptacyjne' }),
+      ).not.toBeInTheDocument();
+      const poZmianie = (await odczytajSesje())[0]!;
+      oczekuj(poZmianie.decyzje).toHaveLength(1);
+      oczekuj(
+        poZmianie.historiaDecyzji.some(
+          (decyzja) => decyzja.pytanieId === 'dodatkowe',
+        ),
+      ).toBe(true);
+      await osoba.click(ekran.getByText('Historia decyzji', { exact: true }));
+      oczekuj(
+        ekran.getAllByText('Zapis historyczny — nie jest aktualną decyzją.')
+          .length,
+      ).toBeGreaterThan(0);
+    },
+  );
+
+  sprawdz(
     'po A → B → A restart zachowuje audyt, a odczyt nie tworzy nowych zdarzeń',
     async () => {
       const osoba = await otworz();

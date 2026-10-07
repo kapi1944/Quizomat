@@ -1,3 +1,4 @@
+import { przeliczAdaptacje } from './adaptacja';
 import type { Quiz } from '../domena/quiz';
 import { schematSesji } from '../domena/sesja';
 import type { MigawkaSesji, Sesja, ZdarzenieSesji } from '../domena/sesja';
@@ -49,6 +50,11 @@ export function odtworzSesje(quiz: Quiz, dane: Sesja): Wynik<Sesja> {
       opis: 'Sesja wymaga tej samej wersji definicji quizu.',
     };
   let migawka = structuredClone(dziennik.baza);
+  let zmianyAdaptacyjne = przeliczAdaptacje({
+    ...poczatek.wartosc,
+    decyzje: migawka.decyzje,
+  }).zmianyAdaptacyjne;
+  let historiaZmianAdaptacyjnych: Sesja['historiaZmianAdaptacyjnych'] = [];
   for (const [indeks, zdarzenie] of dziennik.zdarzenia.entries()) {
     if (
       zdarzenie.kolejnosc !== indeks + 1 ||
@@ -58,16 +64,22 @@ export function odtworzSesje(quiz: Quiz, dane: Sesja): Wynik<Sesja> {
         stan: 'blad',
         opis: 'Niepoprawna kolejność lub czas zdarzeń sesji.',
       };
+    const projekcja = przeliczAdaptacje({
+      ...poczatek.wartosc,
+      decyzje: migawka.decyzje,
+      historiaDecyzji: migawka.historiaDecyzji,
+    });
+    const pytania = projekcja.pytania;
     const indeksPytania =
       migawka.biezacePytanieId === null
-        ? quiz.pytania.length
-        : quiz.pytania.findIndex(
+        ? pytania.length
+        : pytania.findIndex(
             (pytanie) => pytanie.id === migawka.biezacePytanieId,
           );
     if (indeksPytania < 0)
       return { stan: 'blad', opis: 'Dziennik wskazuje nieistniejące pytanie.' };
     const stan = {
-      ...poczatek.wartosc,
+      ...projekcja,
       indeksPytania,
       decyzje: migawka.decyzje,
       historiaDecyzji: migawka.historiaDecyzji,
@@ -80,8 +92,8 @@ export function odtworzSesje(quiz: Quiz, dane: Sesja): Wynik<Sesja> {
         };
       const cel =
         zdarzenie.biezacePytanieId === null
-          ? quiz.pytania.length
-          : quiz.pytania.findIndex(
+          ? pytania.length
+          : pytania.findIndex(
               (pytanie) => pytanie.id === zdarzenie.biezacePytanieId,
             );
       if (cel < 0)
@@ -149,22 +161,62 @@ export function odtworzSesje(quiz: Quiz, dane: Sesja): Wynik<Sesja> {
           odlozonePytaniaId: [
             ...new Set([...migawka.odlozonePytaniaId, pytanie.id]),
           ],
-          biezacePytanieId: quiz.pytania[indeksPytania + 1]?.id ?? null,
+          biezacePytanieId: pytania[indeksPytania + 1]?.id ?? null,
         };
       }
     }
+    const dalszy = przeliczAdaptacje({
+      ...stan,
+      decyzje: migawka.decyzje,
+      historiaDecyzji: migawka.historiaDecyzji,
+    });
+    if (
+      migawka.biezacePytanieId !== null &&
+      !dalszy.pytania.some((pytanie) => pytanie.id === migawka.biezacePytanieId)
+    ) {
+      const miejsce = pytania.findIndex(
+        (pytanie) => pytanie.id === migawka.biezacePytanieId,
+      );
+      migawka.biezacePytanieId =
+        pytania
+          .slice(miejsce + 1)
+          .find((pytanie) =>
+            dalszy.pytania.some((aktywne) => aktywne.id === pytanie.id),
+          )?.id ?? null;
+    }
+    const aktualneId = new Set(
+      dalszy.zmianyAdaptacyjne.map((zmiana) => zmiana.id),
+    );
+    historiaZmianAdaptacyjnych = [
+      ...historiaZmianAdaptacyjnych,
+      ...zmianyAdaptacyjne.filter((zmiana) => !aktualneId.has(zmiana.id)),
+    ].filter((zmiana) => !aktualneId.has(zmiana.id));
+    zmianyAdaptacyjne = dalszy.zmianyAdaptacyjne;
+    migawka = {
+      ...migawka,
+      decyzje: [...dalszy.decyzje],
+      historiaDecyzji: [...dalszy.historiaDecyzji],
+      odlozonePytaniaId: migawka.odlozonePytaniaId.filter((id) =>
+        dalszy.pytania.some((pytanie) => pytanie.id === id),
+      ),
+    };
     migawka = {
       ...migawka,
       zmieniono: zdarzenie.czas,
       stan:
         migawka.biezacePytanieId === null &&
         migawka.odlozonePytaniaId.length === 0 &&
-        migawka.decyzje.length === quiz.pytania.length
+        migawka.decyzje.length === dalszy.pytania.length
           ? 'zakonczona'
           : 'wTrakcie',
     };
   }
-  const odtworzona = schematSesji.safeParse({ ...sesja, ...migawka });
+  const odtworzona = schematSesji.safeParse({
+    ...sesja,
+    ...migawka,
+    zmianyAdaptacyjne,
+    historiaZmianAdaptacyjnych,
+  });
   if (!odtworzona.success)
     return { stan: 'blad', opis: 'Dziennik odtwarza niepoprawny stan sesji.' };
   return { stan: 'gotowy', wartosc: odtworzona.data };

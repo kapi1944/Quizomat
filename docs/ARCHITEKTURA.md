@@ -2,7 +2,7 @@
 
 **Quizomat jest silnikiem uniwersalnym, a konkretne quizy są danymi.**
 
-Stan Etapu 6: działa shell / PWA, model domenowy, deterministyczny importer i liniowy runtime pojedynczego wyboru. Istniejąca baza IndexedDB `quizomat` w wersji 3 przechowuje osobno definicje (`quizy`) oraz kanoniczne sesje z dziennikiem (`sesje`). Biblioteka tworzy niezależne sesje i pozwala kontynuować niedokończone. Autosave obejmuje wybór, Dalej / Wstecz, odkładanie i powrót do odłożonego pytania. Ustawienie „Pokazuj rekomendacje” pozostaje w localStorage; zasoby i adaptacja są odłożone.
+Stan Etapu 7: działa shell / PWA, model domenowy, deterministyczny importer i adaptacyjny runtime pojedynczego wyboru. Istniejąca baza IndexedDB `quizomat` w wersji 3 przechowuje osobno definicje (`quizy`) oraz kanoniczne sesje z dziennikiem (`sesje`). Biblioteka tworzy niezależne sesje i pozwala kontynuować niedokończone. Autosave obejmuje wybór, Dalej / Wstecz, odkładanie i powrót do odłożonego pytania. Ustawienie „Pokazuj rekomendacje” pozostaje w localStorage; zasoby są odłożone.
 
 ## Historia i replay — Etap 6
 
@@ -14,7 +14,7 @@ Zdarzenia to `decyzja`, `odlozenie` i `nawigacja`. Kolejność 1, 2, 3… jest �
 
 Zmiana odpowiedzi zostaje najpierw zamieniona na zdarzenie, a stan do autosave powstaje przez replay. Nie akceptujemy dodatkowych decyzji ani usuniętego archiwum dopisanych poza reduktorem. Zapis IndexedDB wymaga niezmienionej bazy i identycznego prefiksu już zapisanych zdarzeń, oprócz dotychczasowej kontroli równoległej edycji. Zdarzenia oraz projekcja zapisują się razem; abort pozostawia poprzedni komplet danych. Widok „Historia decyzji” pokazuje poprzednią / nową odpowiedź, pytanie, czas i kolejność oddzielnie od bieżącego wyboru, a dawny audyt oznacza jako zapis sprzed migracji.
 
-Ścieżka pozostaje liniowa. Późniejsze niezależne odpowiedzi są ponownie sprawdzane i pozostają ważne; nie kasujemy ich bez istniejącej reguły zależności. Reguły adaptacyjne Etapu 7 nadal otrzymują jawną odmowę wykonania. Replay stanowi punkt przeliczenia przyszłej ścieżki, bez implementowania adaptacji teraz.
+Etap 7 wykonuje istniejące reguły przez `src/silnik/adaptacja.ts`, podłączone do runtime i replayu. Późniejsze niezależne odpowiedzi pozostają ważne; odpowiedzi pytań spoza aktywnej ścieżki trafiają do historii. Aktualne i historyczne zmiany adaptacyjne odtwarzamy z dziennika, a wznowienie sprawdza ich zgodność. UI pokazuje rodzaj każdej aktualnej zmiany i szczegóły „Dlaczego?”. Kolejność oceny, rozstrzygnięcie konfliktów i granice modyfikacji opisuje [kontrakt silnika](../src/silnik/README.md#etap-7--deterministyczna-adaptacja). Wersje quizu, sesji i IndexedDB pozostają bez zmian.
 
 Zakres Etapu 4 objął również podstawowy ekran decyzji i rozróżnienie rekomendacji / wyboru, pierwotnie przypisane do Etapów 6–7. Szczegóły i jawne granice wykonania opisuje `src/silnik/README.md`. Etap 5 rozszerza istniejący magazyn; importer oraz zbiór definicji pozostają bez zmian.
 

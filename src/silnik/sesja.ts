@@ -1,3 +1,4 @@
+import { przeliczAdaptacje } from './adaptacja';
 import type { Quiz } from '../domena/quiz';
 import { schematSesji } from '../domena/sesja';
 import type { Sesja } from '../domena/sesja';
@@ -64,6 +65,13 @@ export function wznowSesje(quiz: Quiz, dane: unknown): Wynik<PrzebiegSesji> {
       opis: 'Aktualny stan sesji nie odpowiada jej dziennikowi.',
     };
   const sesja = odtworzona.wartosc;
+  if (
+    JSON.stringify(wynik.data.zmianyAdaptacyjne) !==
+      JSON.stringify(sesja.zmianyAdaptacyjne) ||
+    JSON.stringify(wynik.data.historiaZmianAdaptacyjnych) !==
+      JSON.stringify(sesja.historiaZmianAdaptacyjnych)
+  )
+    return { stan: 'blad', opis: 'Adaptacja nie odpowiada dziennikowi sesji.' };
   if (sesja.quizId !== quiz.id || sesja.wersjaQuizu !== quiz.wersjaQuizu)
     return {
       stan: 'blad',
@@ -71,30 +79,30 @@ export function wznowSesje(quiz: Quiz, dane: unknown): Wynik<PrzebiegSesji> {
     };
   const poczatek = rozpocznijQuiz(quiz);
   if (poczatek.stan !== 'gotowy') return poczatek;
-  if (
-    sesja.szkiceWlasnychOdpowiedzi.length ||
-    sesja.zmianyAdaptacyjne.length ||
-    sesja.historiaZmianAdaptacyjnych.length
-  )
+  if (sesja.szkiceWlasnychOdpowiedzi.length)
     return {
       stan: 'nieobslugiwane',
-      opis: 'Sesje ze szkicami lub adaptacją są nieobsługiwane w aktualnej wersji.',
+      opis: 'Sesje ze szkicami są nieobsługiwane w aktualnej wersji.',
     };
+  const projekcja = przeliczAdaptacje({
+    ...poczatek.wartosc,
+    decyzje: sesja.decyzje,
+    historiaDecyzji: sesja.historiaDecyzji,
+  });
+  const pytania = projekcja.pytania;
   const indeks =
     sesja.biezacePytanieId === null
-      ? quiz.pytania.length
-      : quiz.pytania.findIndex(
-          (pytanie) => pytanie.id === sesja.biezacePytanieId,
-        );
+      ? pytania.length
+      : pytania.findIndex((pytanie) => pytanie.id === sesja.biezacePytanieId);
   if (
     indeks < 0 ||
     sesja.odlozonePytaniaId.some(
-      (id) => !quiz.pytania.some((pytanie) => pytanie.id === id),
+      (id) => !pytania.some((pytanie) => pytanie.id === id),
     )
   )
     return { stan: 'blad', opis: 'Sesja wskazuje nieistniejące pytanie.' };
   for (const decyzja of [...sesja.decyzje, ...sesja.historiaDecyzji]) {
-    const pytanie = quiz.pytania.find(
+    const pytanie = [...quiz.pytania, ...quiz.pytaniaDodatkowe].find(
       (pytanie) => pytanie.id === decyzja.pytanieId,
     );
     if (!pytanie)
@@ -122,15 +130,15 @@ export function wznowSesje(quiz: Quiz, dane: unknown): Wynik<PrzebiegSesji> {
     sesja.stan === 'zakonczona' &&
     (sesja.biezacePytanieId !== null ||
       sesja.odlozonePytaniaId.length > 0 ||
-      sesja.decyzje.length !== quiz.pytania.length)
+      sesja.decyzje.length !== pytania.length)
   )
     return {
       stan: 'blad',
       opis: 'Sesja nie może być zakończona z nierozstrzygniętymi pytaniami.',
     };
   if (
-    indeks === quiz.pytania.length &&
-    quiz.pytania.some(
+    indeks === pytania.length &&
+    pytania.some(
       (pytanie) =>
         !sesja.decyzje.some((decyzja) => decyzja.pytanieId === pytanie.id) &&
         !sesja.odlozonePytaniaId.includes(pytanie.id),
@@ -145,7 +153,7 @@ export function wznowSesje(quiz: Quiz, dane: unknown): Wynik<PrzebiegSesji> {
     wartosc: {
       sesja,
       przebieg: {
-        ...poczatek.wartosc,
+        ...projekcja,
         indeksPytania: indeks,
         decyzje: sesja.decyzje,
         historiaDecyzji: sesja.historiaDecyzji,
@@ -174,7 +182,7 @@ export function aktualizujSesje(
     zmienione.length === 1 &&
     nowa &&
     nowa.pytanieId === pytanieId &&
-    przebieg.indeksPytania === stan.przebieg.indeksPytania
+    biezacePytanie(przebieg)?.id === pytanieId
       ? dopiszZdarzenie(przebieg.quiz, stan.sesja, {
           rodzaj: 'decyzja',
           kolejnosc,
@@ -237,7 +245,7 @@ export function wrocDoPytania(
   pytanieId: string,
   czas: string,
 ): Wynik<PrzebiegSesji> {
-  const indeks = stan.przebieg.quiz.pytania.findIndex(
+  const indeks = stan.przebieg.pytania.findIndex(
     (pytanie) => pytanie.id === pytanieId,
   );
   if (indeks < 0 || !stan.sesja.odlozonePytaniaId.includes(pytanieId))
