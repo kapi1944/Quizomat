@@ -134,12 +134,15 @@ export function wznowSesje(quiz: Quiz, dane: unknown): Wynik<PrzebiegSesji> {
   if (
     sesja.stan === 'zakonczona' &&
     (sesja.biezacePytanieId !== null ||
-      sesja.odlozonePytaniaId.length > 0 ||
-      sesja.decyzje.length !== pytania.length)
+      pytania.some(
+        (pytanie) =>
+          !sesja.decyzje.some((decyzja) => decyzja.pytanieId === pytanie.id) &&
+          !sesja.odlozonePytaniaId.includes(pytanie.id),
+      ))
   )
     return {
       stan: 'blad',
-      opis: 'Sesja nie może być zakończona z nierozstrzygniętymi pytaniami.',
+      opis: 'Zakończenie wymaga odpowiedzi lub świadomego odłożenia każdego pytania.',
     };
   if (
     indeks === pytania.length &&

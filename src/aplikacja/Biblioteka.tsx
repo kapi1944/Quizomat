@@ -126,6 +126,33 @@ export function Biblioteka() {
               ) : (
                 <p>Brak niedokończonej sesji.</p>
               )}
+              {sesje.some(
+                (sesja) =>
+                  sesja.quizId === quiz.id && sesja.stan === 'zakonczona',
+              ) && (
+                <ul aria-label={`Zakończone sesje: ${quiz.tytul}`}>
+                  {sesje
+                    .filter(
+                      (sesja) =>
+                        sesja.quizId === quiz.id && sesja.stan === 'zakonczona',
+                    )
+                    .map((sesja) => (
+                      <li key={sesja.id}>
+                        <p>
+                          Zakończona ·{' '}
+                          {new Date(sesja.zmieniono).toLocaleString('pl-PL')} ·
+                          Nierozstrzygnięte: {sesja.odlozonePytaniaId.length}
+                        </p>
+                        <Odnosnik
+                          className="przycisk"
+                          to={`/sesja/${encodeURIComponent(sesja.id)}`}
+                        >
+                          Otwórz zakończoną sesję
+                        </Odnosnik>
+                      </li>
+                    ))}
+                </ul>
+              )}
             </li>
           ))}
         </ul>

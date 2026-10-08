@@ -242,6 +242,23 @@ footer {
   flex-wrap: wrap;
   gap: 12px;
 }
+.odpowiedz-standardowa fieldset {
+  margin: 20px 0;
+  min-width: 0;
+}
+.odpowiedz-standardowa label {
+  display: block;
+  margin: 12px 0;
+}
+.odpowiedz-standardowa textarea {
+  display: block;
+  width: 100%;
+  min-height: 90px;
+}
+.obraz-quizu {
+  max-width: 100%;
+  height: auto;
+}
 .ekran-quizu .drugorzedny {
   margin-left: 0;
 }

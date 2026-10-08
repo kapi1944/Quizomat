@@ -564,7 +564,7 @@ opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
   );
 
   sprawdz(
-    'komunikuje odmowę wykonania mechaniki bez przycisków wyboru',
+    'obsługuje TAK/NIE i pokazuje brak wymaganej odpowiedzi',
     async () => {
       await otworz({
         ...quizTekstowy,
@@ -577,8 +577,12 @@ opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
           },
         ],
       });
-      await ekran.findByText(
-        /Ten zestaw sposobów odpowiedzi jest nieobsługiwany/,
+      await ekran.findByRole('radio', { name: 'NIE' });
+      await uzytkownik
+        .setup()
+        .click(ekran.getByRole('button', { name: 'Zatwierdź odpowiedzi' }));
+      oczekuj(ekran.getByRole('alert')).toHaveTextContent(
+        'Uzupełnij wymagane odpowiedzi',
       );
       oczekuj(
         ekran.queryByRole('button', { name: /^Wybierz:/ }),

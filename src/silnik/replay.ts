@@ -108,6 +108,7 @@ export function odtworzSesje(quiz: Quiz, dane: Sesja): Wynik<Sesja> {
         const dalej = przejdzDalej(stan);
         if (dalej.stan !== 'gotowy') return dalej;
       } else if (
+        !(cel === pytania.length && indeksPytania === pytania.length) &&
         cel !== przejdzWstecz(stan).indeksPytania &&
         !migawka.odlozonePytaniaId.includes(zdarzenie.biezacePytanieId ?? '')
       )
@@ -205,8 +206,16 @@ export function odtworzSesje(quiz: Quiz, dane: Sesja): Wynik<Sesja> {
       zmieniono: zdarzenie.czas,
       stan:
         migawka.biezacePytanieId === null &&
-        migawka.odlozonePytaniaId.length === 0 &&
-        migawka.decyzje.length === dalszy.pytania.length
+        dalszy.pytania.every(
+          (pytanie) =>
+            migawka.decyzje.some(
+              (decyzja) => decyzja.pytanieId === pytanie.id,
+            ) || migawka.odlozonePytaniaId.includes(pytanie.id),
+        ) &&
+        (migawka.odlozonePytaniaId.length === 0 ||
+          (zdarzenie.rodzaj === 'nawigacja' &&
+            zdarzenie.poprzedniePytanieId === null &&
+            zdarzenie.biezacePytanieId === null))
           ? 'zakonczona'
           : 'wTrakcie',
     };

@@ -59,7 +59,7 @@ async function otworz(analizator?: Analizator) {
   if (wynik.stan !== 'gotowy') throw new Error(wynik.opis);
   await zapiszSesje(wynik.wartosc.sesja, null);
   wyswietl(analizator);
-  await ekran.findByRole('textbox');
+  await ekran.findByRole('textbox', { name: 'Treść własnej odpowiedzi' });
   return uzytkownik.setup();
 }
 async function zapis() {
@@ -84,7 +84,10 @@ opisz('Ekran analizowanej własnej odpowiedzi', () => {
         },
       };
       const osoba = await otworz(analizator);
-      await osoba.type(ekran.getByRole('textbox'), 'Poczekać na wynik');
+      await osoba.type(
+        ekran.getByRole('textbox', { name: 'Treść własnej odpowiedzi' }),
+        'Poczekać na wynik',
+      );
       await osoba.click(
         ekran.getByRole('button', { name: 'Przeanalizuj odpowiedź' }),
       );
@@ -94,7 +97,9 @@ opisz('Ekran analizowanej własnej odpowiedzi', () => {
         ).toBe('oczekujeAnalizy'),
       );
       oczekuj(ekran.getByText('Oczekiwanie na analizę…')).toBeVisible();
-      oczekuj(ekran.getByRole('textbox')).toBeDisabled();
+      oczekuj(
+        ekran.getByRole('textbox', { name: 'Treść własnej odpowiedzi' }),
+      ).toBeDisabled();
       oczekuj(ekran.getByRole('button', { name: 'Dalej' })).toBeDisabled();
       oczekuj((await odczytajSesje())[0]!.decyzje).toEqual([]);
       zakoncz();
@@ -107,7 +112,10 @@ opisz('Ekran analizowanej własnej odpowiedzi', () => {
     'szkic przetrwa restart; analiza czeka na świadome zatwierdzenie i umożliwia Dalej',
     async () => {
       const osoba = await otworz(new FakeAnalizator());
-      await osoba.type(ekran.getByRole('textbox'), 'Mój kierunek');
+      await osoba.type(
+        ekran.getByRole('textbox', { name: 'Treść własnej odpowiedzi' }),
+        'Mój kierunek',
+      );
       oczekuj((await odczytajSesje())[0]!.decyzje).toEqual([]);
       await osoba.click(ekran.getByRole('button', { name: 'Zapisz szkic' }));
       const szkic = await zapis();
@@ -118,7 +126,9 @@ opisz('Ekran analizowanej własnej odpowiedzi', () => {
       oczekuj(szkic.dziennikSesji!.zdarzenia).toEqual([]);
       posprzataj();
       wyswietl(new FakeAnalizator());
-      oczekuj(await ekran.findByRole('textbox')).toHaveValue('Mój kierunek');
+      oczekuj(
+        await ekran.findByRole('textbox', { name: 'Treść własnej odpowiedzi' }),
+      ).toHaveValue('Mój kierunek');
       await osoba.click(
         ekran.getByRole('button', { name: 'Przeanalizuj odpowiedź' }),
       );
@@ -148,7 +158,9 @@ opisz('Ekran analizowanej własnej odpowiedzi', () => {
       oczekuj(ekran.getByRole('button', { name: 'Dalej' })).toBeEnabled();
       await osoba.click(ekran.getByRole('button', { name: 'Wybierz: Prosty' }));
       await zapis();
-      oczekuj(ekran.getByRole('textbox')).toHaveValue('');
+      oczekuj(
+        ekran.getByRole('textbox', { name: 'Treść własnej odpowiedzi' }),
+      ).toHaveValue('');
       oczekuj(ekran.getByRole('button', { name: 'Dalej' })).toBeEnabled();
       await osoba.click(ekran.getByRole('button', { name: 'Dalej' }));
       await zapis();
@@ -162,7 +174,10 @@ opisz('Ekran analizowanej własnej odpowiedzi', () => {
     'Zmień odpowiedź unieważnia wynik i wymaga ponownej analizy',
     async () => {
       const osoba = await otworz(new FakeAnalizator());
-      await osoba.type(ekran.getByRole('textbox'), 'Stary tekst');
+      await osoba.type(
+        ekran.getByRole('textbox', { name: 'Treść własnej odpowiedzi' }),
+        'Stary tekst',
+      );
       await osoba.click(
         ekran.getByRole('button', { name: 'Przeanalizuj odpowiedź' }),
       );
@@ -172,8 +187,13 @@ opisz('Ekran analizowanej własnej odpowiedzi', () => {
       oczekuj(
         ekran.queryByRole('button', { name: 'Zatwierdź odpowiedź' }),
       ).not.toBeInTheDocument();
-      await osoba.clear(ekran.getByRole('textbox'));
-      await osoba.type(ekran.getByRole('textbox'), 'Nowy tekst');
+      await osoba.clear(
+        ekran.getByRole('textbox', { name: 'Treść własnej odpowiedzi' }),
+      );
+      await osoba.type(
+        ekran.getByRole('textbox', { name: 'Treść własnej odpowiedzi' }),
+        'Nowy tekst',
+      );
       await osoba.click(
         ekran.getByRole('button', { name: 'Przeanalizuj odpowiedź' }),
       );
@@ -191,7 +211,10 @@ opisz('Ekran analizowanej własnej odpowiedzi', () => {
     'awaria lub brak integracji zachowuje szkic i pozwala ponowić po restarcie (%#)',
     async (analizator) => {
       const osoba = await otworz(analizator);
-      await osoba.type(ekran.getByRole('textbox'), 'Nie utracić tekstu');
+      await osoba.type(
+        ekran.getByRole('textbox', { name: 'Treść własnej odpowiedzi' }),
+        'Nie utracić tekstu',
+      );
       await osoba.click(
         ekran.getByRole('button', { name: 'Przeanalizuj odpowiedź' }),
       );
@@ -207,9 +230,9 @@ opisz('Ekran analizowanej własnej odpowiedzi', () => {
       ).not.toBeInTheDocument();
       posprzataj();
       wyswietl(new FakeAnalizator());
-      oczekuj(await ekran.findByRole('textbox')).toHaveValue(
-        'Nie utracić tekstu',
-      );
+      oczekuj(
+        await ekran.findByRole('textbox', { name: 'Treść własnej odpowiedzi' }),
+      ).toHaveValue('Nie utracić tekstu');
       await osoba.click(ekran.getByRole('button', { name: 'Ponów analizę' }));
       oczekuj(
         await ekran.findByRole('button', { name: 'Zatwierdź odpowiedź' }),

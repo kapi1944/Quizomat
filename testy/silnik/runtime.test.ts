@@ -179,35 +179,36 @@ opisz('Liniowy runtime', () => {
     'skala',
     'ranking',
     'kombinacjaWariantow',
-  ] as const)('jawnie odmawia mechaniki %s', (rodzaj) => {
-    const nieobslugiwane = {
-      ...pytanie,
-      sposobyOdpowiedzi: [
-        {
-          id: 'wybor',
-          rodzaj,
-          wymagany: true,
-          minimum: 1,
-          maksimum: 2,
-          krok: 1,
-          cel: 'pytanie' as const,
-          maksymalnaDlugosc: 100,
-          minimumElementow: 1,
-        },
-      ],
-    };
-    oczekuj(sprawdzObslugePytania(nieobslugiwane).stan).toBe('nieobslugiwane');
-    const poczatek = wartosc(
-      rozpocznijQuiz({ ...quizTekstowy, pytania: [nieobslugiwane] }),
-    );
-    oczekuj(wybierzWariant(poczatek, 'prosty', zdarzenie).stan).toBe(
-      'nieobslugiwane',
-    );
-    oczekuj(przejdzDalej(poczatek).stan).toBe('nieobslugiwane');
-  });
+  ] as const)(
+    'obsługuje mechanikę %s i odrzuca niekompletną odpowiedź',
+    (rodzaj) => {
+      const nieobslugiwane = {
+        ...pytanie,
+        sposobyOdpowiedzi: [
+          {
+            id: 'wybor',
+            rodzaj,
+            wymagany: true,
+            minimum: 1,
+            maksimum: 2,
+            krok: 1,
+            cel: 'pytanie' as const,
+            maksymalnaDlugosc: 100,
+            minimumElementow: 1,
+          },
+        ],
+      };
+      oczekuj(sprawdzObslugePytania(nieobslugiwane).stan).toBe('gotowy');
+      const poczatek = wartosc(
+        rozpocznijQuiz({ ...quizTekstowy, pytania: [nieobslugiwane] }),
+      );
+      oczekuj(wybierzWariant(poczatek, 'prosty', zdarzenie).stan).toBe('blad');
+      oczekuj(przejdzDalej(poczatek).stan).toBe('blad');
+    },
+  );
 
   sprawdz(
-    'jawnie odmawia kompozycji, prezentacji wizualnej; przyjmuje przeanalizowaną własną odpowiedź',
+    'obsługuje kompozycję, prezentację wizualną i przeanalizowaną własną odpowiedź',
     () => {
       oczekuj(
         sprawdzObslugePytania({
@@ -217,13 +218,13 @@ opisz('Liniowy runtime', () => {
             { id: 'drugi-wybor', rodzaj: 'pojedynczyWybor', wymagany: true },
           ],
         }).stan,
-      ).toBe('nieobslugiwane');
+      ).toBe('gotowy');
       oczekuj(
         sprawdzObslugePytania({
           ...pytanie,
           prezentacja: { rodzaj: 'wizualna' },
         }).stan,
-      ).toBe('nieobslugiwane');
+      ).toBe('gotowy');
       oczekuj(rozpocznijQuiz(quizAdaptacyjny).stan).toBe('gotowy');
       oczekuj(
         walidujOdpowiedz(pytanie, {

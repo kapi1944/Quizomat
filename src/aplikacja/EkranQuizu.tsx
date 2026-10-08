@@ -1,4 +1,5 @@
 import { OdpowiedzWlasna } from './OdpowiedzWlasna';
+import { OdpowiedzStandardowa } from './OdpowiedzStandardowa';
 import { analizatorAutorski } from '../ai/analizator';
 import type { Analizator } from '../ai/analizator';
 import {
@@ -34,13 +35,41 @@ function opisDecyzji(quiz: Quiz, decyzja: Decyzja | null): string {
   if (decyzja.odpowiedz.rodzaj === 'wlasna') return decyzja.odpowiedz.tekst;
   return decyzja.odpowiedz.wartosci
     .map((wartosc) => {
-      if (wartosc.rodzaj !== 'pojedynczyWybor') return 'Inny sposób odpowiedzi';
-      return (
+      const etykieta = (id: string) =>
         [...quiz.pytania, ...quiz.pytaniaDodatkowe]
           .find((pytanie) => pytanie.id === decyzja.pytanieId)
-          ?.warianty.find((wariant) => wariant.id === wartosc.wariantId)
-          ?.etykieta ?? 'Nieznany wariant'
-      );
+          ?.warianty.find((wariant) => wariant.id === id)?.etykieta ?? id;
+      switch (wartosc.rodzaj) {
+        case 'pojedynczyWybor':
+          return etykieta(wartosc.wariantId);
+        case 'wielokrotnyWybor':
+          return wartosc.wariantyId.map(etykieta).join(', ');
+        case 'ranking':
+          return wartosc.wariantyId
+            .map((id, indeks) => `${indeks + 1}. ${etykieta(id)}`)
+            .join(', ');
+        case 'takNie':
+          return wartosc.wartosc ? 'TAK' : 'NIE';
+        case 'prawdaFalsz':
+          return wartosc.wartosc ? 'PRAWDA' : 'FAŁSZ';
+        case 'otwarta':
+          return wartosc.tekst;
+        case 'skala':
+          return wartosc.cel === 'pytanie'
+            ? String(wartosc.wartosc)
+            : wartosc.oceny
+                .map(
+                  (ocena) => `${etykieta(ocena.wariantId)}: ${ocena.wartosc}`,
+                )
+                .join(', ');
+        case 'kombinacjaWariantow':
+          return wartosc.elementy
+            .map(
+              (element) =>
+                `${etykieta(element.wariantId)}: ${element.fragment}`,
+            )
+            .join('; ');
+      }
     })
     .join(', ');
 }
@@ -133,6 +162,7 @@ function PrzebiegQuizu({
   const [zapisany, ustawZapisany] = stan(poczatek);
   const aktualnyZapis = referencja(poczatek);
   const [blokadaSzkicu, ustawBlokadeSzkicu] = stan(false);
+  const [blokadaStandardowa, ustawBlokadeStandardowa] = stan(false);
   const przebieg = zapisany.przebieg;
   const [blad, ustawBlad] = stan('');
   const [oczekujacy, ustawOczekujacy] = stan<PrzebiegSesji | null>(null);
@@ -143,6 +173,9 @@ function PrzebiegQuizu({
   const pytanie = biezacePytanie(przebieg);
   const wybrany = wybranyWariant(przebieg);
   const obsluga = pytanie ? sprawdzObslugePytania(pytanie) : null;
+  const pojedynczy =
+    pytanie?.sposobyOdpowiedzi.length === 1 &&
+    pytanie.sposobyOdpowiedzi[0]?.rodzaj === 'pojedynczyWybor';
   poZmianie(() => {
     naglowek.current?.focus();
   }, [przebieg.indeksPytania]);
@@ -156,6 +189,23 @@ function PrzebiegQuizu({
     window.addEventListener('beforeunload', ostrzez);
     return () => window.removeEventListener('beforeunload', ostrzez);
   }, [oczekujacy]);
+
+  poZmianie(() => {
+    if (!blokadaStandardowa && !blokadaSzkicu && !oczekujacy) return;
+    function zatrzymajWyjscie(zdarzenie: MouseEvent) {
+      if (
+        zdarzenie.target instanceof Element &&
+        zdarzenie.target.closest('a[href]')
+      ) {
+        zdarzenie.preventDefault();
+        ustawBlad(
+          'Zapisz szkic lub poczekaj na zakończenie zapisu przed opuszczeniem sesji.',
+        );
+      }
+    }
+    document.addEventListener('click', zatrzymajWyjscie, true);
+    return () => document.removeEventListener('click', zatrzymajWyjscie, true);
+  }, [blokadaStandardowa, blokadaSzkicu, oczekujacy]);
 
   async function utrwal(kandydat: PrzebiegSesji) {
     if (trwaZapis.current) return false;
@@ -188,7 +238,8 @@ function PrzebiegQuizu({
   }
 
   function zastosujSesje(wynik: Wynik<PrzebiegSesji>) {
-    if (oczekujacy || trwaZapis.current || blokadaSzkicu) return;
+    if (oczekujacy || trwaZapis.current || blokadaSzkicu || blokadaStandardowa)
+      return;
     if (wynik.stan === 'gotowy') void utrwal(wynik.wartosc);
     else ustawBlad(wynik.opis);
   }
@@ -250,6 +301,14 @@ function PrzebiegQuizu({
             Pytanie {przebieg.indeksPytania + 1} z {przebieg.pytania.length}
           </p>
           {pytanie.wyjasnienie && <p>{pytanie.wyjasnienie}</p>}
+          {pytanie.prezentacja.obrazy?.map((obraz) => (
+            <img
+              className="obraz-quizu"
+              key={obraz.id}
+              src={obraz.dane ?? obraz.url}
+              alt={obraz.opisAlternatywny}
+            />
+          ))}
           {obsluga?.stan !== 'gotowy' ? (
             <p role="status">{obsluga?.opis}</p>
           ) : (
@@ -276,6 +335,14 @@ function PrzebiegQuizu({
                         </p>
                       )}
                       {wariant.opis && <p>{wariant.opis}</p>}
+                      {wariant.obrazy?.map((obraz) => (
+                        <img
+                          className="obraz-quizu"
+                          key={obraz.id}
+                          src={obraz.dane ?? obraz.url}
+                          alt={obraz.opisAlternatywny}
+                        />
+                      ))}
                       {(['zalety', 'wady', 'konsekwencje'] as const).map(
                         (pole) =>
                           wariant[pole]?.length ? (
@@ -298,33 +365,47 @@ function PrzebiegQuizu({
                           ) : null,
                       )}
                       {wariant.wyjasnienie && <p>{wariant.wyjasnienie}</p>}
-                      <button
-                        className="przycisk"
-                        disabled={oczekujacy !== null || blokadaSzkicu}
-                        aria-pressed={zaznaczony}
-                        aria-label={`Wybierz: ${wariant.etykieta}`}
-                        onClick={() =>
-                          zastosuj(
-                            wybierzWariant(przebieg, wariant.id, {
-                              id: crypto.randomUUID(),
-                              zatwierdzono: new Date().toISOString(),
-                            }),
-                          )
-                        }
-                      >
-                        {zaznaczony ? 'Twój wybór' : 'Wybierz'}
-                      </button>
+                      {pojedynczy && (
+                        <button
+                          className="przycisk"
+                          disabled={
+                            oczekujacy !== null ||
+                            blokadaSzkicu ||
+                            blokadaStandardowa
+                          }
+                          aria-pressed={zaznaczony}
+                          aria-label={`Wybierz: ${wariant.etykieta}`}
+                          onClick={() =>
+                            zastosuj(
+                              wybierzWariant(przebieg, wariant.id, {
+                                id: crypto.randomUUID(),
+                                zatwierdzono: new Date().toISOString(),
+                              }),
+                            )
+                          }
+                        >
+                          {zaznaczony ? 'Twój wybór' : 'Wybierz'}
+                        </button>
+                      )}
                     </article>
                   );
                 })}
               </div>
+              <OdpowiedzStandardowa
+                key={`standardowa-${pytanie.id}-${zapisany.sesja.decyzje.find((decyzja) => decyzja.pytanieId === pytanie.id)?.id ?? 'brak'}`}
+                przebieg={zapisany}
+                zapisz={zapiszWlasna}
+                zablokowany={oczekujacy !== null || blokadaSzkicu}
+                ustawBlokade={ustawBlokadeStandardowa}
+                tylkoKomentarz={pojedynczy}
+              />
               {pytanie.innaOdpowiedz && (
                 <OdpowiedzWlasna
                   key={`${pytanie.id}-${zapisany.sesja.decyzje.find((decyzja) => decyzja.pytanieId === pytanie.id)?.id ?? 'brak'}`}
                   przebieg={zapisany}
                   analizator={analizator}
                   zapisz={zapiszWlasna}
-                  zablokowany={oczekujacy !== null}
+                  zablokowany={oczekujacy !== null || blokadaStandardowa}
                   ustawBlokade={ustawBlokadeSzkicu}
                 />
               )}
@@ -334,8 +415,10 @@ function PrzebiegQuizu({
       ) : (
         <p role="status">
           {zapisany.sesja.stan === 'zakonczona'
-            ? 'Odpowiedzi na wszystkie pytania zostały zapisane.'
-            : 'Zestaw został przejrzany. Przed zakończeniem wróć do odłożonych pytań.'}
+            ? zapisany.sesja.odlozonePytaniaId.length
+              ? 'Sesja zakończona. Odłożone pytania pozostają nierozstrzygnięte.'
+              : 'Odpowiedzi na wszystkie pytania zostały zapisane.'
+            : 'Zestaw został przejrzany. Możesz wrócić do odłożonych pytań lub zakończyć sesję z nierozstrzygniętymi pytaniami.'}
         </p>
       )}
       {blad && <p role="alert">{blad}</p>}
@@ -414,7 +497,7 @@ function PrzebiegQuizu({
       )}
       {zapisany.sesja.odlozonePytaniaId.length > 0 && (
         <section aria-label="Lista odłożonych pytań">
-          <h2>Odłożone pytania</h2>
+          <h2>Odłożone pytania — nierozstrzygnięte</h2>
           <ul>
             {przebieg.pytania
               .filter((pytanie) =>
@@ -424,7 +507,9 @@ function PrzebiegQuizu({
                 <li key={pytanie.id}>
                   <button
                     className="przycisk drugorzedny"
-                    disabled={oczekujacy !== null || blokadaSzkicu}
+                    disabled={
+                      oczekujacy !== null || blokadaSzkicu || blokadaStandardowa
+                    }
                     onClick={() =>
                       zastosujSesje(
                         wrocDoPytania(
@@ -446,7 +531,10 @@ function PrzebiegQuizu({
         <button
           className="przycisk"
           disabled={
-            przebieg.indeksPytania === 0 || oczekujacy !== null || blokadaSzkicu
+            przebieg.indeksPytania === 0 ||
+            oczekujacy !== null ||
+            blokadaSzkicu ||
+            blokadaStandardowa
           }
           onClick={() => {
             zastosuj({ stan: 'gotowy', wartosc: przejdzWstecz(przebieg) });
@@ -463,6 +551,7 @@ function PrzebiegQuizu({
                 (decyzja) => decyzja.pytanieId === pytanie.id,
               ) ||
               blokadaSzkicu ||
+              blokadaStandardowa ||
               oczekujacy !== null
             }
             onClick={() => zastosuj(przejdzDalej(przebieg))}
@@ -473,7 +562,9 @@ function PrzebiegQuizu({
         {pytanie && (
           <button
             className="przycisk drugorzedny"
-            disabled={oczekujacy !== null || blokadaSzkicu}
+            disabled={
+              oczekujacy !== null || blokadaSzkicu || blokadaStandardowa
+            }
             onClick={() =>
               zastosujSesje(odlozPytanie(zapisany, new Date().toISOString()))
             }
@@ -482,6 +573,15 @@ function PrzebiegQuizu({
           </button>
         )}
       </div>
+      {!pytanie && zapisany.sesja.stan !== 'zakonczona' && (
+        <button
+          className="przycisk"
+          disabled={oczekujacy !== null}
+          onClick={() => zastosuj({ stan: 'gotowy', wartosc: przebieg })}
+        >
+          Zakończ z nierozstrzygniętymi pytaniami
+        </button>
+      )}
       <Odnosnik className="przycisk drugorzedny" to="/biblioteka">
         Wróć do Biblioteki
       </Odnosnik>

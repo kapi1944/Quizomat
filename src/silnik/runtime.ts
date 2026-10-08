@@ -18,25 +18,6 @@ export interface StanQuizu {
 }
 
 export function sprawdzObslugePytania(pytanie: Pytanie): Wynik<Pytanie> {
-  if (
-    pytanie.prezentacja.rodzaj !== 'tekstowa' ||
-    (pytanie.prezentacja.obrazy?.length ?? 0) > 0 ||
-    pytanie.warianty.some((wariant) => (wariant.obrazy?.length ?? 0) > 0)
-  )
-    return {
-      stan: 'nieobslugiwane',
-      opis: 'Pytania wizualne są nieobsługiwane w aktualnej wersji.',
-    };
-  if (
-    pytanie.sposobyOdpowiedzi.length !== 1 ||
-    pytanie.sposobyOdpowiedzi.some(
-      (sposob) => sposob.rodzaj !== 'pojedynczyWybor',
-    )
-  )
-    return {
-      stan: 'nieobslugiwane',
-      opis: 'Ten zestaw sposobów odpowiedzi jest nieobsługiwany w aktualnej wersji. Dostępny jest pojedynczy wybór.',
-    };
   return { stan: 'gotowy', wartosc: pytanie };
 }
 
@@ -46,7 +27,10 @@ export function walidujOdpowiedz(
 ): Wynik<Odpowiedz> {
   const wynik = schematOdpowiedzi.safeParse(dane);
   if (!wynik.success)
-    return { stan: 'blad', opis: 'Niepoprawna struktura odpowiedzi.' };
+    return {
+      stan: 'blad',
+      opis: 'Uzupełnij wymagane odpowiedzi. Sprawdź tekst, wartości i wybrane elementy.',
+    };
   const odpowiedz = wynik.data;
   const obsluga = sprawdzObslugePytania(pytanie);
   if (obsluga.stan !== 'gotowy') return obsluga;
@@ -63,16 +47,82 @@ export function walidujOdpowiedz(
         stan: 'blad',
         opis: 'Odpowiedź nie odpowiada sposobowi odpowiedzi tego pytania.',
       };
-    if (wartosc.rodzaj !== 'pojedynczyWybor')
-      return {
-        stan: 'nieobslugiwane',
-        opis: 'Ten sposób odpowiedzi jest nieobsługiwany w aktualnej wersji.',
-      };
-    if (!pytanie.warianty.some((wariant) => wariant.id === wartosc.wariantId))
-      return {
-        stan: 'blad',
-        opis: 'Wybrany wariant nie istnieje w tym pytaniu.',
-      };
+    const blad = (opis: string): Wynik<Odpowiedz> => ({
+      stan: 'blad',
+      opis: `${sposob.id}: ${opis}`,
+    });
+    const istnieje = (id: string) =>
+      pytanie.warianty.some((wariant) => wariant.id === id);
+    switch (wartosc.rodzaj) {
+      case 'pojedynczyWybor':
+        if (!istnieje(wartosc.wariantId))
+          return blad('Wybrany wariant nie istnieje w tym pytaniu.');
+        break;
+      case 'wielokrotnyWybor':
+      case 'ranking':
+        if (sposob.rodzaj !== wartosc.rodzaj) break;
+        if (wartosc.wariantyId.some((id) => !istnieje(id)))
+          return blad('Wybrano nieistniejący wariant.');
+        if (
+          wartosc.wariantyId.length < sposob.minimum ||
+          wartosc.wariantyId.length > sposob.maksimum
+        )
+          return blad(
+            `Wybierz od ${sposob.minimum} do ${sposob.maksimum} wariantów.`,
+          );
+        break;
+      case 'otwarta':
+        if (
+          sposob.rodzaj === 'otwarta' &&
+          wartosc.tekst.length > sposob.maksymalnaDlugosc
+        )
+          return blad(
+            `Odpowiedź może mieć najwyżej ${sposob.maksymalnaDlugosc} znaków.`,
+          );
+        break;
+      case 'skala': {
+        if (sposob.rodzaj !== 'skala') break;
+        if (sposob.cel !== wartosc.cel) return blad('Niepoprawny cel skali.');
+        const liczby =
+          wartosc.cel === 'pytanie'
+            ? [wartosc.wartosc]
+            : wartosc.oceny.map((ocena) => ocena.wartosc);
+        if (
+          liczby.some((liczba) => {
+            const kroki = (liczba - sposob.minimum) / sposob.krok;
+            return (
+              liczba < sposob.minimum ||
+              liczba > sposob.maksimum ||
+              Math.abs(kroki - Math.round(kroki)) > 1e-8
+            );
+          })
+        )
+          return blad(
+            `Podaj wartość od ${sposob.minimum} do ${sposob.maksimum}, krok ${sposob.krok}.`,
+          );
+        if (
+          wartosc.cel === 'warianty' &&
+          (wartosc.oceny.some((ocena) => !istnieje(ocena.wariantId)) ||
+            (sposob.wymagany &&
+              wartosc.oceny.length !== pytanie.warianty.length))
+        )
+          return blad('Oceń wszystkie warianty wymaganej skali.');
+        break;
+      }
+      case 'kombinacjaWariantow':
+        if (sposob.rodzaj !== 'kombinacjaWariantow') break;
+        if (wartosc.elementy.some((element) => !istnieje(element.wariantId)))
+          return blad('Element wskazuje nieistniejący wariant.');
+        if (wartosc.elementy.length < sposob.minimumElementow)
+          return blad(
+            `Dodaj co najmniej ${sposob.minimumElementow} elementów kombinacji.`,
+          );
+        if (
+          new Set(wartosc.elementy.map((element) => element.wariantId)).size < 2
+        )
+          return blad('Połącz elementy co najmniej dwóch wariantów.');
+        break;
+    }
   }
   if (
     pytanie.sposobyOdpowiedzi.some(
@@ -81,7 +131,19 @@ export function walidujOdpowiedz(
         !odpowiedz.wartosci.some((wartosc) => wartosc.sposobId === sposob.id),
     )
   )
-    return { stan: 'blad', opis: 'Uzupełnij wymagane sposoby odpowiedzi.' };
+    return {
+      stan: 'blad',
+      opis: `Uzupełnij wymagane sposoby odpowiedzi: ${pytanie.sposobyOdpowiedzi
+        .filter(
+          (sposob) =>
+            sposob.wymagany &&
+            !odpowiedz.wartosci.some(
+              (wartosc) => wartosc.sposobId === sposob.id,
+            ),
+        )
+        .map((sposob) => sposob.id)
+        .join(', ')}.`,
+    };
   return { stan: 'gotowy', wartosc: odpowiedz };
 }
 
@@ -186,6 +248,17 @@ export function wybierzWariant(
   if (!pytanie) return { stan: 'blad', opis: 'Quiz jest już zakończony.' };
   const obsluga = sprawdzObslugePytania(pytanie);
   if (obsluga.stan !== 'gotowy') return obsluga;
+  if (
+    pytanie.sposobyOdpowiedzi.length !== 1 ||
+    pytanie.sposobyOdpowiedzi[0]?.rodzaj !== 'pojedynczyWybor'
+  )
+    return {
+      stan: 'blad',
+      opis: 'Użyj formularza wszystkich sposobów odpowiedzi.',
+    };
+  const poprzednia = stan.decyzje.find(
+    (decyzja) => decyzja.pytanieId === pytanie.id,
+  );
   return zatwierdzDecyzje(stan, {
     ...zdarzenie,
     pytanieId: pytanie.id,
@@ -199,7 +272,10 @@ export function wybierzWariant(
         },
       ],
     },
-    adnotacje: [],
+    ...(poprzednia?.notatka !== undefined
+      ? { notatka: poprzednia.notatka }
+      : {}),
+    adnotacje: poprzednia?.adnotacje ?? [],
   });
 }
 
