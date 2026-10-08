@@ -10,6 +10,7 @@
     "dev": "vite --host 127.0.0.1",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "node testy/e2e/przebieg.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
     "build": "vite build",

@@ -61,8 +61,8 @@ export function Aplikacja() {
                   Przejdź do biblioteki
                 </Odnosnik>
                 <p className="informacja">
-                  Import JSON, lokalna biblioteka i podstawowy przebieg quizów
-                  są dostępne.
+                  Import JSON / TXT / Markdown, lokalna biblioteka, quizy,
+                  podsumowanie i eksport decyzji są dostępne.
                 </p>
               </section>
             }

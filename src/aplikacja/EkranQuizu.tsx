@@ -1,5 +1,6 @@
 import { OdpowiedzWlasna } from './OdpowiedzWlasna';
 import { OdpowiedzStandardowa } from './OdpowiedzStandardowa';
+import { PodsumowanieQuizu } from './PodsumowanieQuizu';
 import { analizatorAutorski } from '../ai/analizator';
 import type { Analizator } from '../ai/analizator';
 import {
@@ -96,6 +97,7 @@ function WczytanyQuiz({
 }) {
   const [wynik, ustawWynik] = stan<Wynik<PrzebiegSesji> | null>(null);
   const [proba, ustawProbe] = stan(0);
+  const [niekompletnyImport, ustawNiekompletnyImport] = stan(false);
   poZmianie(() => {
     let aktualne = true;
     Promise.all([odczytajBiblioteke(), odczytajSesje()]).then(
@@ -103,6 +105,12 @@ function WczytanyQuiz({
         if (!aktualne) return;
         const sesja = sesje.find((sesja) => sesja.id === sesjaId);
         const wpis = wpisy.find(({ quiz }) => quiz.id === sesja?.quizId);
+        ustawNiekompletnyImport(
+          typeof wpis?.daneZrodlowe === 'object' &&
+            wpis.daneZrodlowe !== null &&
+            'niekompletny' in wpis.daneZrodlowe &&
+            wpis.daneZrodlowe.niekompletny === true,
+        );
         ustawWynik(
           wpis && sesja
             ? wznowSesje(wpis.quiz, sesja)
@@ -125,7 +133,13 @@ function WczytanyQuiz({
     };
   }, [sesjaId, proba]);
   if (wynik?.stan === 'gotowy')
-    return <PrzebiegQuizu poczatek={wynik.wartosc} analizator={analizator} />;
+    return (
+      <PrzebiegQuizu
+        poczatek={wynik.wartosc}
+        analizator={analizator}
+        niekompletnyImport={niekompletnyImport}
+      />
+    );
   return (
     <section className="panel">
       <h1>Uruchamianie quizu</h1>
@@ -155,9 +169,11 @@ function WczytanyQuiz({
 function PrzebiegQuizu({
   poczatek,
   analizator,
+  niekompletnyImport,
 }: {
   poczatek: PrzebiegSesji;
   analizator: Analizator;
+  niekompletnyImport: boolean;
 }) {
   const [zapisany, ustawZapisany] = stan(poczatek);
   const aktualnyZapis = referencja(poczatek);
@@ -422,6 +438,13 @@ function PrzebiegQuizu({
         </p>
       )}
       {blad && <p role="alert">{blad}</p>}
+      {zapisany.sesja.stan === 'zakonczona' && !pytanie && (
+        <PodsumowanieQuizu
+          quiz={przebieg.quiz}
+          sesja={zapisany.sesja}
+          niekompletnyImport={niekompletnyImport}
+        />
+      )}
       <details className="historia-decyzji">
         <summary>Historia decyzji</summary>
         <p>
