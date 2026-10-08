@@ -81,11 +81,17 @@ export function Biblioteka() {
         <p>Biblioteka jest pusta. Zaimportuj i zatwierdź pierwszy quiz.</p>
       ) : (
         <ul>
-          {wpisy.map(({ quiz }) => (
+          {wpisy.map(({ quiz, daneZrodlowe }) => (
             <li key={quiz.id}>
               <h2>{quiz.tytul}</h2>
               {quiz.opis && <p>{quiz.opis}</p>}
               <p>{quiz.pytania.length} pytań</p>
+              {typeof daneZrodlowe === 'object' &&
+                daneZrodlowe !== null &&
+                'niekompletny' in daneZrodlowe &&
+                daneZrodlowe.niekompletny === true && (
+                  <p>Import częściowy — niekompletny względem źródła.</p>
+                )}
               <button
                 className="przycisk"
                 disabled={tworzenie}

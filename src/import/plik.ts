@@ -2,6 +2,10 @@ import { walidujImportQuizu } from './walidator';
 import type { WynikImportu } from './walidator';
 
 export function odczytajPlikQuizu(plik: File): Promise<WynikImportu> {
+  return odczytajTekstPliku(plik).then(walidujImportQuizu);
+}
+
+export function odczytajTekstPliku(plik: File): Promise<string> {
   return new Promise((zakoncz, odrzuc) => {
     const czytnik = new FileReader();
     czytnik.onerror = () =>
@@ -12,7 +16,7 @@ export function odczytajPlikQuizu(plik: File): Promise<WynikImportu> {
         odrzuc(new Error('Nie można odczytać tekstu pliku.'));
         return;
       }
-      zakoncz(walidujImportQuizu(czytnik.result));
+      zakoncz(czytnik.result);
     };
     czytnik.readAsText(plik, 'UTF-8');
   });

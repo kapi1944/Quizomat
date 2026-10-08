@@ -255,6 +255,19 @@ footer {
   width: 100%;
   min-height: 90px;
 }
+.import-tekstu label {
+  display: block;
+  margin: 12px 0;
+}
+.import-tekstu textarea {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+}
+.zrodlo-importu {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 .obraz-quizu {
   max-width: 100%;
   height: auto;

@@ -7,6 +7,7 @@ import { useNavigate as nawigacja } from 'react-router-dom';
 import { zapiszZatwierdzonyQuiz } from '../dane/biblioteka';
 import { odczytajPlikQuizu } from '../import/plik';
 import type { ProblemImportu, WynikImportu } from '../import/walidator';
+import { ImportTekstu } from './ImportTekstu';
 
 function identyfikatorElementu(
   wynik: WynikImportu,
@@ -74,6 +75,7 @@ function ListaProblemow({
 
 export function ImportQuizu() {
   const przejdz = nawigacja();
+  const [tryb, ustawTryb] = stan<'json' | 'tekst'>('json');
   const [wynik, ustawWynik] = stan<WynikImportu | null>(null);
   const [nazwaPliku, ustawNazwePliku] = stan('');
   const [zajety, ustawZajety] = stan(false);
@@ -140,26 +142,60 @@ export function ImportQuizu() {
   return (
     <section className="panel import-quizu">
       <h1>Import</h1>
+      {!wynik && (
+        <div className="dzialania-importu">
+          <button
+            className="przycisk drugorzedny"
+            aria-pressed={tryb === 'json'}
+            disabled={zajety}
+            onClick={() => ustawTryb('json')}
+          >
+            Import pliku JSON
+          </button>
+          <button
+            className="przycisk drugorzedny"
+            aria-pressed={tryb === 'tekst'}
+            disabled={zajety}
+            onClick={() => ustawTryb('tekst')}
+          >
+            Import tekstowy
+          </button>
+        </div>
+      )}
+      {tryb === 'tekst' && (
+        <div hidden={wynik !== null}>
+          <ImportTekstu
+            pokazRaport={(odczyt) => {
+              ustawWynik(odczyt);
+              ustawNazwePliku('Import tekstowy');
+            }}
+          />
+        </div>
+      )}
       {!wynik ? (
         <>
-          <p>
-            Wybierz plik JSON. Najpierw sprawdzisz raport; zapis wymaga Twojego
-            zatwierdzenia.
-          </p>
-          <label className="wybor-pliku">
-            Plik quizu JSON
-            <input
-              ref={polePliku}
-              type="file"
-              accept=".json,application/json"
-              onChange={(zdarzenie) => {
-                const plik = zdarzenie.currentTarget.files?.[0];
-                zdarzenie.currentTarget.value = '';
-                if (plik) void wybierzPlik(plik);
-              }}
-            />
-          </label>
-          {zajety && <p role="status">Odczytywanie i sprawdzanie pliku…</p>}
+          {tryb === 'json' && (
+            <>
+              <p>
+                Wybierz plik JSON. Najpierw sprawdzisz raport; zapis wymaga
+                Twojego zatwierdzenia.
+              </p>
+              <label className="wybor-pliku">
+                Plik quizu JSON
+                <input
+                  ref={polePliku}
+                  type="file"
+                  accept=".json,application/json"
+                  onChange={(zdarzenie) => {
+                    const plik = zdarzenie.currentTarget.files?.[0];
+                    zdarzenie.currentTarget.value = '';
+                    if (plik) void wybierzPlik(plik);
+                  }}
+                />
+              </label>
+              {zajety && <p role="status">Odczytywanie i sprawdzanie pliku…</p>}
+            </>
+          )}
           <button
             className="przycisk drugorzedny"
             onClick={() => {
@@ -183,6 +219,14 @@ export function ImportQuizu() {
             <p>
               {raport.nazwaQuizu ?? 'Nie odczytano nazwy quizu'} · {nazwaPliku}
             </p>
+            {typeof wynik.daneZrodlowe === 'object' &&
+              wynik.daneZrodlowe !== null &&
+              'niekompletny' in wynik.daneZrodlowe &&
+              wynik.daneZrodlowe.niekompletny === true && (
+                <p role="status">
+                  Import częściowy — quiz niekompletny względem źródła.
+                </p>
+              )}
             <p>
               Poprawność pojedynczych pytań nie oznacza poprawności całego
               quizu. Żadne dane nie zostały jeszcze zapisane.
@@ -294,7 +338,7 @@ export function ImportQuizu() {
                 disabled={zajety}
                 onClick={wyczysc}
               >
-                Popraw plik
+                {tryb === 'tekst' ? 'Wróć do korekty tekstu' : 'Popraw plik'}
               </button>
               <button
                 className="przycisk"
