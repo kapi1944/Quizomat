@@ -1,51 +1,80 @@
 import {
   useEffect as poZmianie,
+  useMemo as pamietaj,
   useRef as referencja,
   useState as stan,
 } from 'react';
-import { Link as Odnosnik, useNavigate as nawigacja } from 'react-router-dom';
-import type { MechanikaOdpowiedzi, Pytanie, Quiz } from '../domena/quiz';
+import { Link as Odnosnik } from 'react-router-dom';
+import { schematQuizu } from '../domena/quiz';
+import type { Pytanie, Quiz, Wariant } from '../domena/quiz';
 import { zapiszZatwierdzonyQuiz } from '../dane/biblioteka';
 import { walidujImportQuizu } from '../import/walidator';
+import type { ProblemImportu } from '../import/walidator';
+import { EdytorMechanik } from './kreator/EdytorMechanik';
+import {
+  nazwyTypow,
+  nowaMechanika,
+  potrzebujeWariantow,
+} from './kreator/mechaniki';
+import { EdytorLogiki } from './kreator/EdytorLogiki';
+import {
+  EdytorObrazow,
+  ListaTekstow,
+  OdpowiedzAutorska,
+  PolaRekomendacji,
+} from './kreator/PolaZaawansowane';
 
-const nazwyTypow: Record<MechanikaOdpowiedzi['rodzaj'], string> = {
-  pojedynczyWybor: 'Jedna odpowiedź',
-  wielokrotnyWybor: 'Wiele odpowiedzi',
-  takNie: 'Tak / Nie',
-  prawdaFalsz: 'Prawda / Fałsz',
-  otwarta: 'Odpowiedź tekstowa',
-  skala: 'Skala oceny',
-  ranking: 'Ranking wariantów',
-  kombinacjaWariantow: 'Kombinacja fragmentów',
-};
-
-function nowyWariant() {
+function nowyWariant(): Wariant {
   return { id: crypto.randomUUID(), etykieta: '' };
 }
-
 function nowePytanie(): Pytanie {
   return {
     id: crypto.randomUUID(),
     tresc: '',
     prezentacja: { rodzaj: 'tekstowa' },
     warianty: [nowyWariant(), nowyWariant()],
-    sposobyOdpowiedzi: [
-      { id: crypto.randomUUID(), rodzaj: 'pojedynczyWybor', wymagany: true },
-    ],
+    sposobyOdpowiedzi: [nowaMechanika('pojedynczyWybor', 2)],
   };
 }
-
-function uzywaWariantow(rodzaj: MechanikaOdpowiedzi['rodzaj']) {
-  return (
-    rodzaj === 'pojedynczyWybor' ||
-    rodzaj === 'wielokrotnyWybor' ||
-    rodzaj === 'ranking' ||
-    rodzaj === 'kombinacjaWariantow'
+function kopiaPytania(pytanie: Pytanie): Pytanie {
+  const kopia = structuredClone(pytanie);
+  kopia.id = crypto.randomUUID();
+  const warianty = new Map(
+    kopia.warianty.map((wariant) => [wariant.id, crypto.randomUUID()]),
   );
+  const obrazy = [
+    ...(kopia.prezentacja.obrazy ?? []),
+    ...kopia.warianty.flatMap((wariant) => wariant.obrazy ?? []),
+  ];
+  obrazy.forEach((obraz) => {
+    obraz.id = crypto.randomUUID();
+  });
+  kopia.warianty.forEach((wariant) => {
+    wariant.id = warianty.get(wariant.id)!;
+  });
+  kopia.sposobyOdpowiedzi.forEach((mechanika) => {
+    mechanika.id = crypto.randomUUID();
+  });
+  if (kopia.rekomendacja)
+    kopia.rekomendacja.wariantId = warianty.get(kopia.rekomendacja.wariantId)!;
+  if (
+    kopia.innaOdpowiedz?.analiza.tryb === 'autorska' &&
+    kopia.innaOdpowiedz.analiza.dotknietePytaniaId
+  )
+    kopia.innaOdpowiedz.analiza.dotknietePytaniaId =
+      kopia.innaOdpowiedz.analiza.dotknietePytaniaId.map((id) =>
+        id === pytanie.id ? kopia.id : id,
+      );
+  return kopia;
 }
+const etapy = [
+  'Opis quizu',
+  'Pytania',
+  'Logika adaptacyjna',
+  'Podgląd i zapis',
+];
 
 export function KreatorQuizu() {
-  const przejdz = nawigacja();
   const [quiz, ustawQuiz] = stan<Quiz>(() => ({
     schemaVersion: '1.0.0',
     id: crypto.randomUUID(),
@@ -61,134 +90,114 @@ export function KreatorQuizu() {
   const [aktywneId, ustawAktywneId] = stan(quiz.pytania[0]!.id);
   const [bledy, ustawBledy] = stan<string[]>([]);
   const [zapisywanie, ustawZapisywanie] = stan(false);
+  const [zapisany, ustawZapisany] = stan(false);
+  const [potwierdzoneOstrzezenia, ustawPotwierdzoneOstrzezenia] = stan(false);
   const trwaZapis = referencja(false);
   const naglowek = referencja<HTMLHeadingElement>(null);
-  const pytanie = quiz.pytania.find((element) => element.id === aktywneId)!;
-  const indeks = quiz.pytania.indexOf(pytanie);
-  const mechanika = pytanie.sposobyOdpowiedzi[0]!;
-  const wynik = krok === 2 ? walidujImportQuizu(JSON.stringify(quiz)) : null;
-  const [potwierdzoneOstrzezenia, ustawPotwierdzoneOstrzezenia] = stan(false);
-
+  const wszystkie = [...quiz.pytania, ...quiz.pytaniaDodatkowe];
+  const pytanie = wszystkie.find((element) => element.id === aktywneId)!;
+  const dodatkowe = quiz.pytaniaDodatkowe.some(
+    (element) => element.id === aktywneId,
+  );
+  const pula = dodatkowe ? 'pytaniaDodatkowe' : 'pytania';
+  const indeks = quiz[pula].indexOf(pytanie);
+  const wynik = pamietaj(
+    () => walidujImportQuizu(JSON.stringify(quiz)),
+    [quiz],
+  );
+  const zgodny = pamietaj(() => schematQuizu.safeParse(quiz).success, [quiz]);
+  const moznaZapisac =
+    zgodny &&
+    wynik.stan !== 'zablokowany' &&
+    (!wynik.raport.ostrzezenia.length || potwierdzoneOstrzezenia);
   poZmianie(() => {
     naglowek.current?.focus();
   }, [krok]);
 
-  function zmienPytanie(zmiany: Partial<Pytanie>) {
-    ustawQuiz((poprzedni) => ({
-      ...poprzedni,
-      pytania: poprzedni.pytania.map((element) =>
-        element.id === aktywneId ? { ...element, ...zmiany } : element,
-      ),
-    }));
+  function zmienQuiz(nowy: Quiz) {
+    ustawPotwierdzoneOstrzezenia(false);
+    ustawQuiz(nowy);
     ustawBledy([]);
   }
-
-  function zmienMechanike(zmiany: Partial<MechanikaOdpowiedzi>) {
-    zmienPytanie({
-      sposobyOdpowiedzi: [{ ...mechanika, ...zmiany } as MechanikaOdpowiedzi],
+  function zmienPytanie(zmiany: Partial<Pytanie>) {
+    zmienQuiz({
+      ...quiz,
+      [pula]: quiz[pula].map((element) =>
+        element.id === aktywneId ? { ...element, ...zmiany } : element,
+      ),
     });
   }
-
-  function zmienTyp(rodzaj: MechanikaOdpowiedzi['rodzaj']) {
-    const warianty = uzywaWariantow(rodzaj)
-      ? pytanie.warianty.length >= 2
-        ? pytanie.warianty
-        : [nowyWariant(), nowyWariant()]
-      : [];
-    const podstawa = { id: mechanika.id, wymagany: mechanika.wymagany };
-    let nowa: MechanikaOdpowiedzi;
-    switch (rodzaj) {
-      case 'wielokrotnyWybor':
-      case 'ranking':
-        nowa = { ...podstawa, rodzaj, minimum: 1, maksimum: warianty.length };
-        break;
-      case 'otwarta':
-        nowa = { ...podstawa, rodzaj, maksymalnaDlugosc: 2000 };
-        break;
-      case 'skala':
-        nowa = {
-          ...podstawa,
-          rodzaj,
-          cel: 'pytanie',
-          minimum: 1,
-          maksimum: 5,
-          krok: 1,
-        };
-        break;
-      case 'kombinacjaWariantow':
-        nowa = { ...podstawa, rodzaj, minimumElementow: 1 };
-        break;
-      default:
-        nowa = { ...podstawa, rodzaj };
-    }
-    zmienPytanie({ warianty, sposobyOdpowiedzi: [nowa] });
-  }
-
-  function zmienWarianty(warianty: Pytanie['warianty']) {
+  function zmienWariant(wariant: Wariant) {
     zmienPytanie({
-      warianty,
-      sposobyOdpowiedzi: [
-        mechanika.rodzaj === 'wielokrotnyWybor' ||
-        mechanika.rodzaj === 'ranking'
-          ? {
-              ...mechanika,
-              minimum: Math.min(mechanika.minimum, warianty.length),
-              maksimum: Math.min(mechanika.maksimum, warianty.length),
-            }
-          : mechanika,
-      ],
+      warianty: pytanie.warianty.map((element) =>
+        element.id === wariant.id ? wariant : element,
+      ),
     });
   }
-
+  function przeniesPytanie(docelowa: 'pytania' | 'pytaniaDodatkowe') {
+    if (docelowa === pula) return;
+    const bazowe =
+      docelowa === 'pytania'
+        ? [...quiz.pytania, pytanie]
+        : quiz.pytania.filter((element) => element.id !== pytanie.id);
+    zmienQuiz({
+      ...quiz,
+      pytania: bazowe,
+      liczbaPytan: bazowe.length,
+      pytaniaDodatkowe:
+        docelowa === 'pytaniaDodatkowe'
+          ? [...quiz.pytaniaDodatkowe, pytanie]
+          : quiz.pytaniaDodatkowe.filter(
+              (element) => element.id !== pytanie.id,
+            ),
+    });
+  }
   function przesunPytanie(kierunek: number) {
-    const pytania = [...quiz.pytania];
-    const nowyIndeks = indeks + kierunek;
-    if (nowyIndeks < 0 || nowyIndeks >= pytania.length) return;
-    [pytania[indeks], pytania[nowyIndeks]] = [
-      pytania[nowyIndeks]!,
-      pytania[indeks]!,
-    ];
-    ustawQuiz({ ...quiz, pytania });
+    const pytania = [...quiz[pula]];
+    const cel = indeks + kierunek;
+    if (cel < 0 || cel >= pytania.length) return;
+    [pytania[indeks], pytania[cel]] = [pytania[cel]!, pytania[indeks]!];
+    zmienQuiz({ ...quiz, [pula]: pytania });
   }
-
+  function przejdzDoProblemu(problem: ProblemImportu) {
+    if (problem.sciezka[0] === 'reguly') ustawKrok(2);
+    else if (
+      (problem.sciezka[0] === 'pytania' ||
+        problem.sciezka[0] === 'pytaniaDodatkowe') &&
+      typeof problem.sciezka[1] === 'number'
+    ) {
+      const element = quiz[problem.sciezka[0]][problem.sciezka[1]];
+      if (element) ustawAktywneId(element.id);
+      ustawKrok(1);
+    } else ustawKrok(0);
+  }
+  function opisProblemu(problem: ProblemImportu) {
+    const [pole, numer, , numerWariantu] = problem.sciezka;
+    return `${pole === 'pytania' ? 'Pytanie ' : pole === 'pytaniaDodatkowe' ? 'Pytanie dodatkowe ' : pole === 'reguly' ? 'Reguła ' : ''}${typeof numer === 'number' ? numer + 1 + ': ' : ''}${problem.sciezka[2] === 'warianty' && typeof numerWariantu === 'number' ? `wariant ${numerWariantu + 1}: ` : ''}${problem.opis}`;
+  }
   function dalej() {
     if (krok === 0) {
       const problemy = [
         ...(!quiz.tytul.trim() ? ['Podaj tytuł quizu.'] : []),
         ...(!quiz.jezyk.trim() ? ['Podaj język quizu.'] : []),
+        ...(!/^\d+\.\d+\.\d+$/.test(quiz.wersjaQuizu)
+          ? ['Wersja quizu musi mieć postać X.Y.Z.']
+          : []),
       ];
       ustawBledy(problemy);
       if (problemy.length) return;
-    } else {
-      const sprawdzenie = walidujImportQuizu(JSON.stringify(quiz));
-      if (sprawdzenie.stan === 'zablokowany') {
-        ustawBledy(
-          sprawdzenie.raport.bledy.map((problem) => {
-            const numer =
-              problem.sciezka[0] === 'pytania' &&
-              typeof problem.sciezka[1] === 'number'
-                ? `Pytanie ${problem.sciezka[1] + 1}: `
-                : '';
-            return numer + problem.opis;
-          }),
-        );
-        return;
-      }
     }
     ustawBledy([]);
-    ustawPotwierdzoneOstrzezenia(false);
-    ustawKrok(krok + 1);
+    ustawKrok(Math.min(3, krok + 1));
   }
-
   async function zapisz() {
-    if (trwaZapis.current || !wynik || wynik.stan === 'zablokowany') return;
-    if (wynik.raport.ostrzezenia.length && !potwierdzoneOstrzezenia) return;
+    if (trwaZapis.current || !moznaZapisac || zapisany) return;
     trwaZapis.current = true;
     ustawZapisywanie(true);
     ustawBledy([]);
     try {
       await zapiszZatwierdzonyQuiz(wynik);
-      przejdz('/biblioteka');
+      ustawZapisany(true);
     } catch (blad) {
       ustawBledy([
         blad instanceof Error
@@ -200,6 +209,26 @@ export function KreatorQuizu() {
       ustawZapisywanie(false);
     }
   }
+  function eksportuj() {
+    if (wynik.stan === 'zablokowany' || !moznaZapisac) return;
+    const odnosnik = document.createElement('a');
+    const adres = URL.createObjectURL(
+      new Blob([JSON.stringify(wynik.quiz, null, 2) + '\n'], {
+        type: 'application/json;charset=utf-8',
+      }),
+    );
+    try {
+      odnosnik.href = adres;
+      odnosnik.download = `quiz-${quiz.id}.json`;
+      document.body.append(odnosnik);
+      odnosnik.click();
+    } catch {
+      ustawBledy(['Nie przygotowano eksportu JSON. Spróbuj ponownie.']);
+    } finally {
+      odnosnik.remove();
+      setTimeout(() => URL.revokeObjectURL(adres), 1000);
+    }
+  }
 
   return (
     <section className="panel kreator-quizu">
@@ -208,10 +237,10 @@ export function KreatorQuizu() {
         Stwórz nowy quiz
       </h1>
       <p className="wprowadzenie-kreatora">
-        Od pierwszego pytania do gotowego quizu — w trzech prostych krokach.
+        Ułóż pytania, określ logikę i sprawdź quiz przed zapisem.
       </p>
       <ol className="kroki-kreatora" aria-label="Etapy tworzenia quizu">
-        {['Opis quizu', 'Pytania', 'Podgląd i zapis'].map((etykieta, numer) => (
+        {etapy.map((etykieta, numer) => (
           <li key={etykieta} aria-current={numer === krok ? 'step' : undefined}>
             <span className="numer-kroku" aria-hidden="true">
               {numer < krok ? '✓' : numer + 1}
@@ -224,14 +253,12 @@ export function KreatorQuizu() {
         noValidate
         onSubmit={(zdarzenie) => {
           zdarzenie.preventDefault();
-          if (krok < 2) dalej();
+          if (krok < 3) dalej();
           else void zapisz();
         }}
       >
         <fieldset className="pola-kreatora" disabled={zapisywanie}>
-          <legend className="tylko-czytnik">
-            {['Opis quizu', 'Pytania', 'Podgląd i zapis'][krok]}
-          </legend>
+          <legend className="tylko-czytnik">{etapy[krok]}</legend>
           {krok === 0 && (
             <div className="opis-kreatora">
               <div className="pola-opisu">
@@ -242,11 +269,9 @@ export function KreatorQuizu() {
                     required
                     value={quiz.tytul}
                     placeholder="Np. Jak chcemy pracować?"
-                    autoComplete="off"
-                    onChange={(zdarzenie) => {
-                      ustawQuiz({ ...quiz, tytul: zdarzenie.target.value });
-                      ustawBledy([]);
-                    }}
+                    onChange={(zdarzenie) =>
+                      zmienQuiz({ ...quiz, tytul: zdarzenie.target.value })
+                    }
                   />
                 </label>
                 <label>
@@ -254,14 +279,12 @@ export function KreatorQuizu() {
                   <textarea
                     rows={4}
                     value={quiz.opis ?? ''}
-                    placeholder="O czym jest quiz i w czym ma pomóc?"
-                    onChange={(zdarzenie) => {
-                      ustawQuiz({
+                    onChange={(zdarzenie) =>
+                      zmienQuiz({
                         ...quiz,
                         opis: zdarzenie.target.value || undefined,
-                      });
-                      ustawBledy([]);
-                    }}
+                      })
+                    }
                   />
                 </label>
                 <label>
@@ -269,23 +292,40 @@ export function KreatorQuizu() {
                   <input
                     required
                     value={quiz.jezyk}
-                    placeholder="pl"
-                    autoComplete="off"
-                    onChange={(zdarzenie) => {
-                      ustawQuiz({ ...quiz, jezyk: zdarzenie.target.value });
-                      ustawBledy([]);
-                    }}
+                    onChange={(zdarzenie) =>
+                      zmienQuiz({ ...quiz, jezyk: zdarzenie.target.value })
+                    }
                   />
                 </label>
+                <label>
+                  Wersja quizu
+                  <input
+                    value={quiz.wersjaQuizu}
+                    placeholder="1.0.0"
+                    onChange={(zdarzenie) =>
+                      zmienQuiz({
+                        ...quiz,
+                        wersjaQuizu: zdarzenie.target.value,
+                      })
+                    }
+                  />
+                </label>
+                <details>
+                  <summary>Dane techniczne</summary>
+                  <p>
+                    ID quizu: <code>{quiz.id}</code>
+                  </p>
+                  <p>Format: {quiz.schemaVersion}</p>
+                </details>
               </div>
               <aside className="wskazowka-kreatora">
                 <span className="symbol-kreatora" aria-hidden="true">
                   ✦
                 </span>
-                <h3>Dobre pytania robią różnicę</h3>
+                <h3>Od pytania do decyzji</h3>
                 <p>
-                  Nazwij temat, dodaj pytania i wybierz sposób odpowiedzi. Przed
-                  zapisem obejrzysz cały quiz.
+                  Szczegóły wariantów i reguły możesz dodawać stopniowo. Błędy i
+                  ostrzeżenia zobaczysz podczas pracy.
                 </p>
                 <p className="etykieta">
                   Quiz trafi do lokalnej Biblioteki dopiero po Twoim
@@ -299,39 +339,51 @@ export function KreatorQuizu() {
               <aside className="lista-pytan-kreatora" aria-label="Lista pytań">
                 <h2>
                   Twoje pytania{' '}
-                  <span className="liczba-kreatora">{quiz.pytania.length}</span>
+                  <span className="liczba-kreatora">{wszystkie.length}</span>
                 </h2>
-                <ol>
-                  {quiz.pytania.map((element, numer) => (
-                    <li key={element.id}>
-                      <button
-                        type="button"
-                        aria-pressed={element.id === aktywneId}
-                        onClick={() => ustawAktywneId(element.id)}
-                      >
-                        <span className="numer-pytania">{numer + 1}</span>
-                        <span>
-                          {element.tresc || 'Nowe pytanie'}
-                          <small>
-                            {nazwyTypow[element.sposobyOdpowiedzi[0]!.rodzaj]}
-                          </small>
-                        </span>
-                      </button>
-                    </li>
-                  ))}
-                </ol>
+                {(['pytania', 'pytaniaDodatkowe'] as const).map((rodzaj) => (
+                  <div key={rodzaj}>
+                    <h3>
+                      {rodzaj === 'pytania' ? 'Bazowe' : 'Dodatkowe'} (
+                      {quiz[rodzaj].length})
+                    </h3>
+                    <ol>
+                      {quiz[rodzaj].map((element, numer) => (
+                        <li key={element.id}>
+                          <button
+                            type="button"
+                            aria-pressed={element.id === aktywneId}
+                            onClick={() => ustawAktywneId(element.id)}
+                          >
+                            <span className="numer-pytania">
+                              {rodzaj === 'pytania' ? '' : 'D'}
+                              {numer + 1}
+                            </span>
+                            <span>
+                              {element.tresc || 'Nowe pytanie'}
+                              <small>
+                                {element.sposobyOdpowiedzi
+                                  .map((sposob) => nazwyTypow[sposob.rodzaj])
+                                  .join(' · ')}
+                              </small>
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                ))}
                 <button
-                  type="button"
                   className="przycisk drugorzedny"
+                  type="button"
                   onClick={() => {
                     const nowe = nowePytanie();
-                    ustawQuiz({
+                    zmienQuiz({
                       ...quiz,
-                      liczbaPytan: quiz.pytania.length + 1,
                       pytania: [...quiz.pytania, nowe],
+                      liczbaPytan: quiz.pytania.length + 1,
                     });
                     ustawAktywneId(nowe.id);
-                    ustawBledy([]);
                   }}
                 >
                   + Dodaj pytanie
@@ -339,10 +391,13 @@ export function KreatorQuizu() {
               </aside>
               <section
                 className="edytor-pytania"
-                aria-label={`Edycja pytania ${indeks + 1}`}
+                aria-label={`Edycja pytania ${dodatkowe ? 'dodatkowego ' : ''}${indeks + 1}`}
               >
                 <div className="naglowek-edytora">
-                  <h2>Pytanie {indeks + 1}</h2>
+                  <h2>
+                    Pytanie {dodatkowe ? 'D' : ''}
+                    {indeks + 1}
+                  </h2>
                   <div className="narzedzia-kreatora">
                     <button
                       type="button"
@@ -354,7 +409,7 @@ export function KreatorQuizu() {
                     </button>
                     <button
                       type="button"
-                      disabled={indeks === quiz.pytania.length - 1}
+                      disabled={indeks === quiz[pula].length - 1}
                       aria-label="Przesuń pytanie w dół"
                       onClick={() => przesunPytanie(1)}
                     >
@@ -362,20 +417,42 @@ export function KreatorQuizu() {
                     </button>
                     <button
                       type="button"
-                      disabled={quiz.pytania.length === 1}
                       onClick={() => {
-                        const pytania = quiz.pytania.filter(
-                          (element) => element.id !== aktywneId,
-                        );
-                        ustawQuiz({
+                        const kopia = kopiaPytania(pytanie);
+                        const pytania = [...quiz[pula]];
+                        pytania.splice(indeks + 1, 0, kopia);
+                        zmienQuiz({
                           ...quiz,
-                          pytania,
-                          liczbaPytan: pytania.length,
+                          [pula]: pytania,
+                          liczbaPytan:
+                            pula === 'pytania'
+                              ? pytania.length
+                              : quiz.pytania.length,
                         });
-                        ustawAktywneId(
-                          pytania[Math.min(indeks, pytania.length - 1)]!.id,
+                        ustawAktywneId(kopia.id);
+                      }}
+                    >
+                      Duplikuj pytanie
+                    </button>
+                    <button
+                      type="button"
+                      disabled={wszystkie.length === 1}
+                      onClick={() => {
+                        const pozostale = wszystkie.filter(
+                          (element) => element.id !== pytanie.id,
                         );
-                        ustawBledy([]);
+                        const pytania = quiz[pula].filter(
+                          (element) => element.id !== pytanie.id,
+                        );
+                        zmienQuiz({
+                          ...quiz,
+                          [pula]: pytania,
+                          liczbaPytan:
+                            pula === 'pytania'
+                              ? pytania.length
+                              : quiz.pytania.length,
+                        });
+                        ustawAktywneId(pozostale[0]!.id);
                       }}
                     >
                       Usuń pytanie
@@ -383,45 +460,103 @@ export function KreatorQuizu() {
                   </div>
                 </div>
                 <label>
+                  Pula pytania
+                  <select
+                    value={pula}
+                    onChange={(zdarzenie) =>
+                      przeniesPytanie(
+                        zdarzenie.target.value as
+                          'pytania' | 'pytaniaDodatkowe',
+                      )
+                    }
+                  >
+                    <option value="pytania">Pytanie bazowe</option>
+                    <option value="pytaniaDodatkowe">Pytanie dodatkowe</option>
+                  </select>
+                </label>
+                <label>
                   Treść pytania
                   <textarea
                     required
                     rows={3}
                     value={pytanie.tresc}
-                    placeholder="O co chcesz zapytać?"
                     onChange={(zdarzenie) =>
                       zmienPytanie({ tresc: zdarzenie.target.value })
                     }
                   />
                 </label>
-                <label>
-                  Sposób odpowiedzi
-                  <select
-                    value={mechanika.rodzaj}
-                    onChange={(zdarzenie) =>
-                      zmienTyp(
-                        zdarzenie.target.value as MechanikaOdpowiedzi['rodzaj'],
-                      )
-                    }
-                  >
-                    {Object.entries(nazwyTypow).map(([wartosc, nazwa]) => (
-                      <option key={wartosc} value={wartosc}>
-                        {nazwa}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="pole-wyboru-kreatora">
-                  <input
-                    type="checkbox"
-                    checked={mechanika.wymagany}
-                    onChange={(zdarzenie) =>
-                      zmienMechanike({ wymagany: zdarzenie.target.checked })
+                <details>
+                  <summary>Prezentacja i wyjaśnienie pytania</summary>
+                  <label>
+                    Typ prezentacji
+                    <select
+                      value={pytanie.prezentacja.rodzaj}
+                      onChange={(zdarzenie) =>
+                        zmienPytanie({
+                          prezentacja: {
+                            ...pytanie.prezentacja,
+                            rodzaj: zdarzenie.target
+                              .value as Pytanie['prezentacja']['rodzaj'],
+                          },
+                        })
+                      }
+                    >
+                      <option value="tekstowa">Tekstowa</option>
+                      <option value="wizualna">Wizualna</option>
+                      <option value="mieszana">Mieszana</option>
+                    </select>
+                  </label>
+                  <label>
+                    Wyjaśnienie (opcjonalne)
+                    <textarea
+                      rows={3}
+                      value={pytanie.wyjasnienie ?? ''}
+                      onChange={(zdarzenie) =>
+                        zmienPytanie({
+                          wyjasnienie: zdarzenie.target.value || undefined,
+                        })
+                      }
+                    />
+                  </label>
+                  <EdytorObrazow
+                    key={pytanie.id}
+                    nazwa="Obrazy pytania"
+                    obrazy={pytanie.prezentacja.obrazy ?? []}
+                    zmien={(obrazy) =>
+                      zmienPytanie({
+                        prezentacja: { ...pytanie.prezentacja, obrazy },
+                      })
                     }
                   />
-                  Wymagana odpowiedź
-                </label>
-                {uzywaWariantow(mechanika.rodzaj) && (
+                </details>
+                <EdytorMechanik
+                  pytanie={pytanie}
+                  zmien={(sposoby) => {
+                    const potrzeba = sposoby.some(potrzebujeWariantow);
+                    const puste = pytanie.warianty.every(
+                      (wariant) =>
+                        !wariant.etykieta &&
+                        !wariant.opis &&
+                        !wariant.zalety?.length &&
+                        !wariant.wady?.length &&
+                        !wariant.konsekwencje?.length &&
+                        !wariant.wyjasnienie &&
+                        !wariant.obrazy?.length,
+                    );
+                    zmienPytanie({
+                      sposobyOdpowiedzi: sposoby,
+                      warianty: potrzeba
+                        ? pytanie.warianty.length
+                          ? pytanie.warianty
+                          : [nowyWariant(), nowyWariant()]
+                        : puste
+                          ? []
+                          : pytanie.warianty,
+                    });
+                  }}
+                />
+                {(pytanie.warianty.length > 0 ||
+                  pytanie.sposobyOdpowiedzi.some(potrzebujeWariantow)) && (
                   <div className="warianty-kreatora">
                     <h3>Warianty odpowiedzi</h3>
                     {pytanie.warianty.map((wariant, numer) => (
@@ -429,19 +564,11 @@ export function KreatorQuizu() {
                         <label>
                           Wariant {numer + 1}
                           <input
-                            required
                             value={wariant.etykieta}
-                            placeholder={`Treść wariantu ${numer + 1}`}
                             onChange={(zdarzenie) =>
-                              zmienPytanie({
-                                warianty: pytanie.warianty.map((element) =>
-                                  element.id === wariant.id
-                                    ? {
-                                        ...element,
-                                        etykieta: zdarzenie.target.value,
-                                      }
-                                    : element,
-                                ),
+                              zmienWariant({
+                                ...wariant,
+                                etykieta: zdarzenie.target.value,
                               })
                             }
                           />
@@ -450,39 +577,68 @@ export function KreatorQuizu() {
                           className="usun-wariant"
                           type="button"
                           aria-label={`Usuń wariant ${numer + 1}`}
-                          disabled={pytanie.warianty.length <= 2}
                           onClick={() =>
-                            zmienWarianty(
-                              pytanie.warianty.filter(
+                            zmienPytanie({
+                              warianty: pytanie.warianty.filter(
                                 (element) => element.id !== wariant.id,
                               ),
-                            )
+                              rekomendacja:
+                                pytanie.rekomendacja?.wariantId === wariant.id
+                                  ? undefined
+                                  : pytanie.rekomendacja,
+                            })
                           }
                         >
                           ×
                         </button>
                         <details>
-                          <summary>Opis wariantu</summary>
+                          <summary>Szczegóły wariantu {numer + 1}</summary>
                           <label>
                             Opis wariantu {numer + 1} (opcjonalny)
                             <textarea
                               rows={2}
                               value={wariant.opis ?? ''}
                               onChange={(zdarzenie) =>
-                                zmienPytanie({
-                                  warianty: pytanie.warianty.map((element) =>
-                                    element.id === wariant.id
-                                      ? {
-                                          ...element,
-                                          opis:
-                                            zdarzenie.target.value || undefined,
-                                        }
-                                      : element,
-                                  ),
+                                zmienWariant({
+                                  ...wariant,
+                                  opis: zdarzenie.target.value || undefined,
                                 })
                               }
                             />
                           </label>
+                          {(['zalety', 'wady', 'konsekwencje'] as const).map(
+                            (pole) => (
+                              <ListaTekstow
+                                key={pole}
+                                nazwa={`${{ zalety: 'Zalety', wady: 'Wady', konsekwencje: 'Konsekwencje' }[pole]} wariantu ${numer + 1}`}
+                                wartosci={wariant[pole] ?? []}
+                                zmien={(wartosci) =>
+                                  zmienWariant({ ...wariant, [pole]: wartosci })
+                                }
+                              />
+                            ),
+                          )}
+                          <label>
+                            Wyjaśnienie wariantu {numer + 1}
+                            <textarea
+                              rows={2}
+                              value={wariant.wyjasnienie ?? ''}
+                              onChange={(zdarzenie) =>
+                                zmienWariant({
+                                  ...wariant,
+                                  wyjasnienie:
+                                    zdarzenie.target.value || undefined,
+                                })
+                              }
+                            />
+                          </label>
+                          <EdytorObrazow
+                            nazwa={`Obrazy wariantu ${numer + 1}`}
+                            obrazy={wariant.obrazy ?? []}
+                            zmien={(obrazy) =>
+                              zmienWariant({ ...wariant, obrazy })
+                            }
+                          />
                         </details>
                       </div>
                     ))}
@@ -499,192 +655,232 @@ export function KreatorQuizu() {
                     </button>
                   </div>
                 )}
-                {(mechanika.rodzaj === 'wielokrotnyWybor' ||
-                  mechanika.rodzaj === 'ranking' ||
-                  mechanika.rodzaj === 'skala') && (
-                  <div className="zakres-kreatora">
-                    <label>
-                      {mechanika.rodzaj === 'skala'
-                        ? 'Początek skali'
-                        : 'Minimum wyborów'}
-                      <input
-                        type="number"
-                        step="any"
-                        value={
-                          Number.isNaN(mechanika.minimum)
-                            ? ''
-                            : mechanika.minimum
-                        }
-                        onChange={(zdarzenie) =>
-                          zmienMechanike({
-                            minimum: zdarzenie.target.valueAsNumber,
-                          })
-                        }
-                      />
-                    </label>
-                    <label>
-                      {mechanika.rodzaj === 'skala'
-                        ? 'Koniec skali'
-                        : 'Maksimum wyborów'}
-                      <input
-                        type="number"
-                        step="any"
-                        value={
-                          Number.isNaN(mechanika.maksimum)
-                            ? ''
-                            : mechanika.maksimum
-                        }
-                        onChange={(zdarzenie) =>
-                          zmienMechanike({
-                            maksimum: zdarzenie.target.valueAsNumber,
-                          })
-                        }
-                      />
-                    </label>
-                    {mechanika.rodzaj === 'skala' && (
-                      <label>
-                        Krok skali
-                        <input
-                          type="number"
-                          step="any"
-                          value={
-                            Number.isNaN(mechanika.krok) ? '' : mechanika.krok
-                          }
-                          onChange={(zdarzenie) =>
-                            zmienMechanike({
-                              krok: zdarzenie.target.valueAsNumber,
-                            })
-                          }
-                        />
-                      </label>
-                    )}
-                  </div>
-                )}
-                {mechanika.rodzaj === 'otwarta' && (
-                  <label>
-                    Limit znaków
+                <details>
+                  <summary>Rekomendacja autora</summary>
+                  <label className="pole-wyboru-kreatora">
                     <input
-                      type="number"
-                      min="1"
-                      value={
-                        Number.isNaN(mechanika.maksymalnaDlugosc)
-                          ? ''
-                          : mechanika.maksymalnaDlugosc
-                      }
-                      onChange={(zdarzenie) =>
-                        zmienMechanike({
-                          maksymalnaDlugosc: zdarzenie.target.valueAsNumber,
-                        })
-                      }
-                    />
-                  </label>
-                )}
-                {mechanika.rodzaj === 'kombinacjaWariantow' && (
-                  <label>
-                    Minimum fragmentów
-                    <input
-                      type="number"
-                      min="1"
-                      value={
-                        Number.isNaN(mechanika.minimumElementow)
-                          ? ''
-                          : mechanika.minimumElementow
-                      }
-                      onChange={(zdarzenie) =>
-                        zmienMechanike({
-                          minimumElementow: zdarzenie.target.valueAsNumber,
-                        })
-                      }
-                    />
-                  </label>
-                )}
-                <details className="wyjasnienie-kreatora">
-                  <summary>Dodaj wyjaśnienie pytania</summary>
-                  <label>
-                    Wyjaśnienie (opcjonalne)
-                    <textarea
-                      rows={3}
-                      value={pytanie.wyjasnienie ?? ''}
+                      type="checkbox"
+                      checked={!!pytanie.rekomendacja}
+                      disabled={!pytanie.warianty.length}
                       onChange={(zdarzenie) =>
                         zmienPytanie({
-                          wyjasnienie: zdarzenie.target.value || undefined,
+                          rekomendacja: zdarzenie.target.checked
+                            ? {
+                                wariantId: pytanie.warianty[0]?.id ?? '',
+                                uzasadnienie: '',
+                              }
+                            : undefined,
                         })
                       }
                     />
+                    Dodaj rekomendację autora
                   </label>
+                  <p className="etykieta">
+                    Rekomendacja autora nie jest odpowiedzią użytkownika.
+                  </p>
+                  {pytanie.rekomendacja && (
+                    <PolaRekomendacji
+                      warianty={pytanie.warianty}
+                      wartosc={pytanie.rekomendacja}
+                      zmien={(rekomendacja) => zmienPytanie({ rekomendacja })}
+                    />
+                  )}
+                </details>
+                <details>
+                  <summary>Własna odpowiedź „Inne”</summary>
+                  <label className="pole-wyboru-kreatora">
+                    <input
+                      type="checkbox"
+                      checked={!!pytanie.innaOdpowiedz}
+                      onChange={(zdarzenie) =>
+                        zmienPytanie({
+                          innaOdpowiedz: zdarzenie.target.checked
+                            ? {
+                                etykieta: 'Inne — własna odpowiedź',
+                                analiza: {
+                                  tryb: 'autorska',
+                                  interpretacja: '',
+                                  potencjalneSkutki: [],
+                                },
+                              }
+                            : undefined,
+                        })
+                      }
+                    />
+                    Zezwól na własną odpowiedź
+                  </label>
+                  {pytanie.innaOdpowiedz && (
+                    <OdpowiedzAutorska
+                      wartosc={pytanie.innaOdpowiedz}
+                      zmien={(innaOdpowiedz) => zmienPytanie({ innaOdpowiedz })}
+                      pytania={wszystkie}
+                    />
+                  )}
+                </details>
+                <details>
+                  <summary>ID pytania i sposobów odpowiedzi</summary>
+                  <p>
+                    ID pytania: <code>{pytanie.id}</code>
+                  </p>
+                  {pytanie.sposobyOdpowiedzi.map((mechanika) => (
+                    <p key={mechanika.id}>
+                      {nazwyTypow[mechanika.rodzaj]}:{' '}
+                      <code>{mechanika.id}</code>
+                    </p>
+                  ))}
                 </details>
               </section>
             </div>
           )}
           {krok === 2 && (
+            <EdytorLogiki
+              quiz={quiz}
+              zmien={(reguly) => zmienQuiz({ ...quiz, reguly })}
+            />
+          )}
+          {krok === 3 && (
             <div className="podglad-kreatora">
               <div className="podsumowanie-kreatora">
-                <span className="etykieta">
-                  Gotowy do zatwierdzenia · {quiz.pytania.length} pytań
-                </span>
+                <span className="etykieta">Podgląd definicji quizu</span>
                 <h2>{quiz.tytul}</h2>
                 {quiz.opis && <p>{quiz.opis}</p>}
-                <p className="etykieta">
-                  Sprawdź treść. Możesz wrócić do edycji przed zapisaniem.
+                <p>
+                  Język: {quiz.jezyk} · Wersja: {quiz.wersjaQuizu}
                 </p>
+                <p>
+                  Bazowe: {quiz.pytania.length} · Dodatkowe:{' '}
+                  {quiz.pytaniaDodatkowe.length} · Reguły: {quiz.reguly.length}
+                </p>
+                <details>
+                  <summary>Dane techniczne quizu</summary>
+                  <p>
+                    ID: <code>{quiz.id}</code>
+                  </p>
+                  <p>Format: {quiz.schemaVersion}</p>
+                </details>
               </div>
-              {quiz.pytania.map((element, numer) => (
+              {wszystkie.map((element, numer) => (
                 <section className="karta-podgladu-kreatora" key={element.id}>
                   <p className="etykieta">
-                    Pytanie {numer + 1} ·{' '}
-                    {nazwyTypow[element.sposobyOdpowiedzi[0]!.rodzaj]}
+                    {quiz.pytania.includes(element) ? 'Bazowe' : 'Dodatkowe'} ·{' '}
+                    {numer + 1}
                   </p>
-                  <h3>{element.tresc}</h3>
+                  <h3>{element.tresc || 'Brak treści pytania'}</h3>
                   {element.wyjasnienie && <p>{element.wyjasnienie}</p>}
-                  {element.warianty.length > 0 && (
+                  <p className="etykieta">
+                    {element.sposobyOdpowiedzi
+                      .map(
+                        (sposob) =>
+                          `${nazwyTypow[sposob.rodzaj]} (${sposob.wymagany ? 'wymagane' : 'opcjonalne'})`,
+                      )
+                      .join(' · ')}{' '}
+                    · Prezentacja: {element.prezentacja.rodzaj}
+                  </p>
+                  <details>
+                    <summary>
+                      Warianty i szczegóły ({element.warianty.length})
+                    </summary>
                     <ol>
                       {element.warianty.map((wariant) => (
                         <li key={wariant.id}>
-                          {wariant.etykieta}
+                          <strong>{wariant.etykieta}</strong>
                           {wariant.opis && <p>{wariant.opis}</p>}
+                          {(['zalety', 'wady', 'konsekwencje'] as const).map(
+                            (pole) =>
+                              wariant[pole]?.length ? (
+                                <div key={pole}>
+                                  <h4>
+                                    {
+                                      {
+                                        zalety: 'Zalety',
+                                        wady: 'Wady',
+                                        konsekwencje: 'Konsekwencje',
+                                      }[pole]
+                                    }
+                                  </h4>
+                                  <ul>
+                                    {wariant[pole].map((tekst, indeks) => (
+                                      <li key={indeks}>{tekst}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              ) : null,
+                          )}
+                          {wariant.wyjasnienie && <p>{wariant.wyjasnienie}</p>}
                         </li>
                       ))}
                     </ol>
-                  )}
-                  {element.sposobyOdpowiedzi.map((sposob) => (
-                    <p className="etykieta" key={sposob.id}>
-                      {sposob.wymagany
-                        ? 'Odpowiedź wymagana'
-                        : 'Odpowiedź opcjonalna'}
-                      {(sposob.rodzaj === 'wielokrotnyWybor' ||
-                        sposob.rodzaj === 'ranking') &&
-                        ` · Wybory: ${sposob.minimum}–${sposob.maksimum}`}
-                      {sposob.rodzaj === 'skala' &&
-                        ` · Skala: ${sposob.minimum}–${sposob.maksimum}, krok ${sposob.krok}`}
-                      {sposob.rodzaj === 'otwarta' &&
-                        ` · Limit: ${sposob.maksymalnaDlugosc} znaków`}
-                      {sposob.rodzaj === 'kombinacjaWariantow' &&
-                        ` · Minimum fragmentów: ${sposob.minimumElementow}`}
+                  </details>
+                  {element.rekomendacja && (
+                    <p>
+                      Rekomendacja autora:{' '}
+                      {
+                        element.warianty.find(
+                          (wariant) =>
+                            wariant.id === element.rekomendacja?.wariantId,
+                        )?.etykieta
+                      }{' '}
+                      — {element.rekomendacja.uzasadnienie}
                     </p>
-                  ))}
+                  )}
+                  {element.innaOdpowiedz && (
+                    <p>
+                      Własna odpowiedź: {element.innaOdpowiedz.etykieta} ·
+                      Analiza autorska
+                    </p>
+                  )}
                 </section>
               ))}
-              {!!wynik?.raport.ostrzezenia.length && (
-                <div className="ostrzezenia-kreatora">
-                  <h3>Sprawdź przed zapisem</h3>
+            </div>
+          )}
+          <details className="walidacja-kreatora" open={krok === 3}>
+            <summary>
+              Walidacja na żywo — błędy: {wynik.raport.bledy.length},
+              ostrzeżenia: {wynik.raport.ostrzezenia.length}
+            </summary>
+            {(
+              [
+                ['Błędy krytyczne', wynik.raport.bledy],
+                ['Ostrzeżenia', wynik.raport.ostrzezenia],
+                ['Informacje', wynik.raport.informacje],
+              ] as const
+            ).map(([nazwa, problemy]) => (
+              <section key={nazwa}>
+                <h3>
+                  {nazwa} ({problemy.length})
+                </h3>
+                {problemy.length ? (
                   <ul>
-                    {wynik.raport.ostrzezenia.map((problem, numer) => (
-                      <li key={numer}>{problem.opis}</li>
+                    {problemy.map((problem, numer) => (
+                      <li key={numer}>
+                        <button
+                          className="odnosnik-problemu"
+                          type="button"
+                          disabled={zapisany}
+                          onClick={() => przejdzDoProblemu(problem)}
+                        >
+                          {opisProblemu(problem)}
+                        </button>
+                      </li>
                     ))}
                   </ul>
-                  <label className="pole-wyboru-kreatora">
-                    <input
-                      type="checkbox"
-                      checked={potwierdzoneOstrzezenia}
-                      onChange={(zdarzenie) =>
-                        ustawPotwierdzoneOstrzezenia(zdarzenie.target.checked)
-                      }
-                    />
-                    Akceptuję ostrzeżenia i chcę zapisać quiz
-                  </label>
-                </div>
-              )}
-            </div>
+                ) : (
+                  <p>Brak.</p>
+                )}
+              </section>
+            ))}
+          </details>
+          {krok === 3 && !!wynik.raport.ostrzezenia.length && (
+            <label className="pole-wyboru-kreatora">
+              <input
+                type="checkbox"
+                checked={potwierdzoneOstrzezenia}
+                onChange={(zdarzenie) =>
+                  ustawPotwierdzoneOstrzezenia(zdarzenie.target.checked)
+                }
+              />
+              Akceptuję ostrzeżenia i chcę zapisać lub wyeksportować quiz
+            </label>
           )}
           {bledy.length > 0 && (
             <div className="bledy-kreatora" role="alert">
@@ -696,11 +892,18 @@ export function KreatorQuizu() {
               </ul>
             </div>
           )}
+          {zapisany && (
+            <p role="status">
+              Quiz zapisany do Biblioteki.{' '}
+              <Odnosnik to="/biblioteka">Otwórz Bibliotekę</Odnosnik>
+            </p>
+          )}
           <div className="dzialania-kreatora">
             {krok > 0 ? (
               <button
                 type="button"
                 className="przycisk drugorzedny"
+                disabled={zapisany}
                 onClick={() => {
                   ustawKrok(krok - 1);
                   ustawBledy([]);
@@ -711,23 +914,28 @@ export function KreatorQuizu() {
             ) : (
               <Odnosnik to="/biblioteka">Wróć do Biblioteki</Odnosnik>
             )}
+            {krok === 3 && (
+              <button
+                className="przycisk drugorzedny"
+                type="button"
+                disabled={!moznaZapisac}
+                onClick={eksportuj}
+              >
+                Eksportuj JSON
+              </button>
+            )}
             <button
               type="submit"
               className="przycisk"
-              disabled={
-                krok === 2 &&
-                (!wynik ||
-                  wynik.stan === 'zablokowany' ||
-                  (!!wynik.raport.ostrzezenia.length &&
-                    !potwierdzoneOstrzezenia))
-              }
+              disabled={krok === 3 && (!moznaZapisac || zapisany)}
             >
               {zapisywanie
                 ? 'Zapisywanie…'
                 : [
                     'Dalej: pytania →',
+                    'Dalej: logika adaptacyjna →',
                     'Przejdź do podglądu →',
-                    'Zatwierdź i zapisz quiz',
+                    zapisany ? 'Zapisano' : 'Zapisz do Biblioteki',
                   ][krok]}
             </button>
           </div>

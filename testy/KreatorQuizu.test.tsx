@@ -30,6 +30,15 @@ poKazdym(() => {
   atrapy.unstubAllGlobals();
 });
 
+async function wpisz(
+  osoba: ReturnType<typeof uzytkownik.setup>,
+  pole: HTMLElement,
+  tekst: string,
+) {
+  await osoba.click(pole);
+  await osoba.paste(tekst);
+}
+
 async function otworz() {
   pokaz(
     <Router initialEntries={['/biblioteka']}>
@@ -38,8 +47,9 @@ async function otworz() {
   );
   const osoba = uzytkownik.setup();
   await osoba.click(ekran.getByRole('link', { name: '+ Stwórz nowy quiz' }));
-  await osoba.type(ekran.getByLabelText('Tytuł quizu'), 'Nasz projekt');
-  await osoba.type(
+  await wpisz(osoba, ekran.getByLabelText('Tytuł quizu'), 'Nasz projekt');
+  await wpisz(
+    osoba,
     ekran.getByLabelText('Opis (opcjonalny)'),
     'Ustalenia zespołu',
   );
@@ -51,33 +61,49 @@ sprawdz(
   'prowadzi przez podgląd i zapisuje dopiero po zatwierdzeniu; gotowy quiz działa w silniku',
   async () => {
     const osoba = await otworz();
-    await osoba.type(ekran.getByLabelText('Treść pytania'), 'Jaki układ?');
-    await osoba.type(
+    await wpisz(osoba, ekran.getByLabelText('Treść pytania'), 'Jaki układ?');
+    await wpisz(
+      osoba,
       ekran.getByLabelText('Wariant 1', { exact: true }),
       'Prosty',
     );
-    await osoba.type(
+    await wpisz(
+      osoba,
       ekran.getByLabelText('Wariant 2', { exact: true }),
       'Rozbudowany',
     );
-    await osoba.click(ekran.getAllByText('Opis wariantu', { exact: true })[0]!);
-    await osoba.type(
+    await osoba.click(
+      ekran.getAllByText('Szczegóły wariantu 1', { exact: true })[0]!,
+    );
+    await wpisz(
+      osoba,
       ekran.getByLabelText('Opis wariantu 1 (opcjonalny)'),
       'Mało elementów',
+    );
+    await osoba.click(
+      ekran.getByRole('button', { name: 'Dalej: logika adaptacyjna →' }),
     );
     await osoba.click(
       ekran.getByRole('button', { name: 'Przejdź do podglądu →' }),
     );
     oczekuj(await odczytajBiblioteke()).toEqual([]);
     oczekuj(ekran.getByRole('heading', { name: 'Jaki układ?' })).toBeVisible();
+    await osoba.click(ekran.getByText('Warianty i szczegóły (2)'));
     oczekuj(ekran.getByText('Mało elementów')).toBeVisible();
     await osoba.click(ekran.getByRole('button', { name: '← Wstecz' }));
+    await osoba.click(ekran.getByRole('button', { name: '← Wstecz' }));
     oczekuj(ekran.getByLabelText('Treść pytania')).toHaveValue('Jaki układ?');
+    await osoba.click(
+      ekran.getByRole('button', { name: 'Dalej: logika adaptacyjna →' }),
+    );
     await osoba.click(
       ekran.getByRole('button', { name: 'Przejdź do podglądu →' }),
     );
     await osoba.click(
-      ekran.getByRole('button', { name: 'Zatwierdź i zapisz quiz' }),
+      ekran.getByRole('button', { name: 'Zapisz do Biblioteki' }),
+    );
+    await osoba.click(
+      await ekran.findByRole('link', { name: 'Otwórz Bibliotekę' }),
     );
     await ekran.findByRole('heading', { name: 'Biblioteka' });
     const wpisy = await odczytajBiblioteke();
@@ -106,15 +132,21 @@ sprawdz('blokuje pusty opis i błędne pytania przed zapisem', async () => {
   const osoba = uzytkownik.setup();
   await osoba.click(ekran.getByRole('button', { name: 'Dalej: pytania →' }));
   oczekuj(ekran.getByRole('alert')).toHaveTextContent('Podaj tytuł quizu.');
-  await osoba.type(ekran.getByLabelText('Tytuł quizu'), 'Quiz');
+  await wpisz(osoba, ekran.getByLabelText('Tytuł quizu'), 'Quiz');
   await osoba.click(ekran.getByRole('button', { name: 'Dalej: pytania →' }));
+  await osoba.click(
+    ekran.getByRole('button', { name: 'Dalej: logika adaptacyjna →' }),
+  );
   await osoba.click(
     ekran.getByRole('button', { name: 'Przejdź do podglądu →' }),
   );
-  oczekuj(ekran.getByRole('alert')).toHaveTextContent('Pytanie 1');
   oczekuj(
-    ekran.queryByRole('button', { name: 'Zatwierdź i zapisz quiz' }),
-  ).not.toBeInTheDocument();
+    ekran.getByRole('heading', { name: /Błędy krytyczne/ }),
+  ).toBeVisible();
+  oczekuj(
+    ekran.getByRole('button', { name: 'Zapisz do Biblioteki' }),
+  ).toBeDisabled();
+  oczekuj(ekran.getByRole('button', { name: 'Eksportuj JSON' })).toBeDisabled();
   oczekuj(await odczytajBiblioteke()).toEqual([]);
 });
 
@@ -129,23 +161,31 @@ sprawdz.each([
   'kombinacjaWariantow',
 ])('tworzy poprawny quiz dla mechaniki %s', async (rodzaj) => {
   const osoba = await otworz();
-  await osoba.type(ekran.getByLabelText('Treść pytania'), 'Twoja odpowiedź?');
+  await wpisz(osoba, ekran.getByLabelText('Treść pytania'), 'Twoja odpowiedź?');
   await osoba.selectOptions(ekran.getByLabelText('Sposób odpowiedzi'), rodzaj);
   if (ekran.queryByLabelText('Wariant 1', { exact: true })) {
-    await osoba.type(
+    await wpisz(
+      osoba,
       ekran.getByLabelText('Wariant 1', { exact: true }),
       'Pierwszy',
     );
-    await osoba.type(
+    await wpisz(
+      osoba,
       ekran.getByLabelText('Wariant 2', { exact: true }),
       'Drugi',
     );
   }
   await osoba.click(
+    ekran.getByRole('button', { name: 'Dalej: logika adaptacyjna →' }),
+  );
+  await osoba.click(
     ekran.getByRole('button', { name: 'Przejdź do podglądu →' }),
   );
   await osoba.click(
-    ekran.getByRole('button', { name: 'Zatwierdź i zapisz quiz' }),
+    ekran.getByRole('button', { name: 'Zapisz do Biblioteki' }),
+  );
+  await osoba.click(
+    await ekran.findByRole('link', { name: 'Otwórz Bibliotekę' }),
   );
   await ekran.findByRole('heading', { name: 'Biblioteka' });
   const quiz = schematQuizu.parse((await odczytajBiblioteke())[0]!.quiz);
@@ -159,13 +199,13 @@ sprawdz(
   'zachowuje pytania przy zmianie kolejności i usuwa tylko wskazane pytanie',
   async () => {
     const osoba = await otworz();
-    await osoba.type(ekran.getByLabelText('Treść pytania'), 'Pierwsze');
+    await wpisz(osoba, ekran.getByLabelText('Treść pytania'), 'Pierwsze');
     await osoba.selectOptions(
       ekran.getByLabelText('Sposób odpowiedzi'),
       'takNie',
     );
     await osoba.click(ekran.getByRole('button', { name: '+ Dodaj pytanie' }));
-    await osoba.type(ekran.getByLabelText('Treść pytania'), 'Drugie');
+    await wpisz(osoba, ekran.getByLabelText('Treść pytania'), 'Drugie');
     await osoba.selectOptions(
       ekran.getByLabelText('Sposób odpowiedzi'),
       'otwarta',
@@ -182,10 +222,16 @@ sprawdz(
     oczekuj(ekran.getByLabelText('Treść pytania')).toHaveValue('Pierwsze');
     oczekuj(ekran.getByRole('button', { name: 'Usuń pytanie' })).toBeDisabled();
     await osoba.click(
+      ekran.getByRole('button', { name: 'Dalej: logika adaptacyjna →' }),
+    );
+    await osoba.click(
       ekran.getByRole('button', { name: 'Przejdź do podglądu →' }),
     );
     await osoba.click(
-      ekran.getByRole('button', { name: 'Zatwierdź i zapisz quiz' }),
+      ekran.getByRole('button', { name: 'Zapisz do Biblioteki' }),
+    );
+    await osoba.click(
+      await ekran.findByRole('link', { name: 'Otwórz Bibliotekę' }),
     );
     await ekran.findByRole('heading', { name: 'Biblioteka' });
     const quiz = (await odczytajBiblioteke())[0]!.quiz;
@@ -198,10 +244,17 @@ sprawdz(
   'zachowuje podgląd po błędzie magazynu i umożliwia ponowienie zapisu',
   async () => {
     const osoba = await otworz();
-    await osoba.type(ekran.getByLabelText('Treść pytania'), 'Czy kontynuować?');
+    await wpisz(
+      osoba,
+      ekran.getByLabelText('Treść pytania'),
+      'Czy kontynuować?',
+    );
     await osoba.selectOptions(
       ekran.getByLabelText('Sposób odpowiedzi'),
       'takNie',
+    );
+    await osoba.click(
+      ekran.getByRole('button', { name: 'Dalej: logika adaptacyjna →' }),
     );
     await osoba.click(
       ekran.getByRole('button', { name: 'Przejdź do podglądu →' }),
@@ -212,7 +265,7 @@ sprawdz(
         throw new Error('Brak miejsca na zapis.');
       });
     await osoba.click(
-      ekran.getByRole('button', { name: 'Zatwierdź i zapisz quiz' }),
+      ekran.getByRole('button', { name: 'Zapisz do Biblioteki' }),
     );
     await poczekaj(() =>
       oczekuj(ekran.getByRole('alert')).toHaveTextContent(
@@ -225,7 +278,10 @@ sprawdz(
     oczekuj(await odczytajBiblioteke()).toEqual([]);
     awaria.mockRestore();
     await osoba.click(
-      ekran.getByRole('button', { name: 'Zatwierdź i zapisz quiz' }),
+      ekran.getByRole('button', { name: 'Zapisz do Biblioteki' }),
+    );
+    await osoba.click(
+      await ekran.findByRole('link', { name: 'Otwórz Bibliotekę' }),
     );
     await ekran.findByRole('heading', { name: 'Biblioteka' });
     oczekuj(await odczytajBiblioteke()).toHaveLength(1);

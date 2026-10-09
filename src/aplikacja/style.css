@@ -556,7 +556,7 @@ footer {
 }
 .kroki-kreatora {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   list-style: none;
   padding: 0 0 28px;
@@ -724,6 +724,7 @@ footer {
 }
 .narzedzia-kreatora {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
 }
 .narzedzia-kreatora button,
@@ -869,5 +870,54 @@ footer {
   .numer-kroku {
     flex-basis: auto;
     width: 32px;
+  }
+}
+
+.kreator-quizu .lista-tekstow-kreatora,
+.kreator-quizu .mechanika-kreatora,
+.regula-kreatora {
+  min-width: 0;
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid var(--obramowanie);
+  border-radius: 12px;
+}
+.regula-kreatora > fieldset {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+}
+.wiersz-kreatora {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  gap: 8px;
+  align-items: center;
+}
+.kreator-quizu .wariant-kreatora details label {
+  margin-bottom: 12px;
+}
+.wiersz-kreatora button {
+  min-height: 44px;
+}
+.kreator-quizu code,
+.kreator-quizu summary,
+.kreator-quizu button {
+  overflow-wrap: anywhere;
+}
+.odnosnik-problemu {
+  text-align: left;
+  color: var(--akcent);
+  background: transparent;
+  border: 0;
+  padding: 8px 0;
+  text-decoration: underline;
+}
+.walidacja-kreatora {
+  margin-top: 20px;
+  border-top: 1px solid var(--obramowanie);
+}
+@media (max-width: 400px) {
+  .kroki-kreatora {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
