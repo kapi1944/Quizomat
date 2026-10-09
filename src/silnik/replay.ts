@@ -5,7 +5,6 @@ import type { MigawkaSesji, Sesja, ZdarzenieSesji } from '../domena/sesja';
 import {
   biezacePytanie,
   przejdzDalej,
-  przejdzWstecz,
   rozpocznijQuiz,
   zatwierdzDecyzje,
 } from './runtime';
@@ -102,20 +101,16 @@ export function odtworzSesje(quiz: Quiz, dane: Sesja): Wynik<Sesja> {
           opis: 'Nawigacja wskazuje nieistniejące pytanie.',
         };
       if (
-        cel === indeksPytania + 1 &&
-        !migawka.odlozonePytaniaId.includes(zdarzenie.biezacePytanieId ?? '')
+        zdarzenie.biezacePytanieId === null &&
+        indeksPytania !== pytania.length
       ) {
         const dalej = przejdzDalej(stan);
-        if (dalej.stan !== 'gotowy') return dalej;
-      } else if (
-        !(cel === pytania.length && indeksPytania === pytania.length) &&
-        cel !== przejdzWstecz(stan).indeksPytania &&
-        !migawka.odlozonePytaniaId.includes(zdarzenie.biezacePytanieId ?? '')
-      )
-        return {
-          stan: 'blad',
-          opis: 'Niedozwolona nawigacja w dzienniku sesji.',
-        };
+        if (cel !== indeksPytania + 1 || dalej.stan !== 'gotowy')
+          return {
+            stan: 'blad',
+            opis: 'Niedozwolone zakończenie nawigacji w dzienniku sesji.',
+          };
+      }
       migawka = { ...migawka, biezacePytanieId: zdarzenie.biezacePytanieId };
     } else {
       const pytanie = biezacePytanie(stan);

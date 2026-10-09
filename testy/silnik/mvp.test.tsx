@@ -405,7 +405,9 @@ sprawdz(
       wartosci: oczekuj.arrayContaining(wartosci),
     });
     oczekuj(pierwszy.decyzje[0]?.notatka).toBe('Uzasadnienie');
-    await osoba.click(ekran.getByRole('button', { name: 'Dalej' }));
+    await osoba.click(
+      ekran.getByRole('button', { name: 'Następne pytanie →' }),
+    );
     await poczekajNaZapis();
     await ekran.findByRole('heading', { level: 1, name: 'Dodatkowa zgoda' });
     await osoba.click(ekran.getByLabelText('NIE'));
@@ -418,7 +420,9 @@ sprawdz(
     posprzataj();
     wznow(zapis.id);
     oczekuj(await ekran.findByLabelText('NIE')).toBeChecked();
-    await osoba.click(ekran.getByRole('button', { name: 'Wstecz' }));
+    await osoba.click(
+      ekran.getByRole('button', { name: '← Poprzednie pytanie' }),
+    );
     await poczekajNaZapis();
     const wiele = wewnatrz(ekran.getByRole('group', { name: /· wiele / }));
     await osoba.click(wiele.getByLabelText('Szczegółowy'));
@@ -442,7 +446,9 @@ sprawdz(
         wartosci.filter((wartosc) => wartosc.sposobId !== 'wiele'),
       ),
     );
-    await osoba.click(ekran.getByRole('button', { name: 'Dalej' }));
+    await osoba.click(
+      ekran.getByRole('button', { name: 'Następne pytanie →' }),
+    );
     await poczekajNaZapis();
     await ekran.findByRole('heading', {
       level: 1,
@@ -450,7 +456,9 @@ sprawdz(
     });
     await osoba.click(ekran.getByRole('button', { name: 'Wybierz: Prosty' }));
     await poczekajNaZapis();
-    await osoba.click(ekran.getByRole('button', { name: 'Dalej' }));
+    await osoba.click(
+      ekran.getByRole('button', { name: 'Następne pytanie →' }),
+    );
     await poczekajNaZapis();
     await osoba.click(ekran.getByRole('button', { name: 'Wróć później' }));
     await poczekajNaZapis();
@@ -502,7 +510,9 @@ sprawdz(
       ekran.getByRole('button', { name: 'Zapisz odpowiedź z komentarzem' }),
     );
     await poczekajNaZapis();
-    await osoba.click(ekran.getByRole('button', { name: 'Dalej' }));
+    await osoba.click(
+      ekran.getByRole('button', { name: 'Następne pytanie →' }),
+    );
     await poczekajNaZapis();
     const rozstrzygniety = (await odczytajSesje())[0]!;
     oczekuj(rozstrzygniety.stan).toBe('zakonczona');

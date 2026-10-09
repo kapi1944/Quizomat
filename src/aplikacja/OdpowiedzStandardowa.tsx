@@ -173,7 +173,7 @@ export function OdpowiedzStandardowa({
                             ? 'radio'
                             : 'checkbox'
                         }
-                        name={sposob.id}
+                        name={`${pytanie.id}-${sposob.id}`}
                         checked={
                           wartosc?.rodzaj === 'pojedynczyWybor'
                             ? wartosc.wariantId === wariant.id
@@ -250,7 +250,7 @@ export function OdpowiedzStandardowa({
                   <label key={String(wybor)}>
                     <input
                       type="radio"
-                      name={sposob.id}
+                      name={`${pytanie.id}-${sposob.id}`}
                       checked={
                         wartosc?.rodzaj === sposob.rodzaj &&
                         wartosc.wartosc === wybor

@@ -2,6 +2,7 @@ import { describe as opisz, expect as oczekuj, it as sprawdz } from 'vitest';
 import {
   aktualizujSesje,
   odlozPytanie,
+  przejdzDoPytania,
   utworzSesje,
   wrocDoPytania,
   wznowSesje,
@@ -56,6 +57,36 @@ function wstecz(stan: PrzebiegSesji) {
 }
 
 opisz('Czysty replay decyzji i nawigacji', () => {
+  sprawdz(
+    'odtwarza nawigację i decyzje poza kolejnością bez mutacji ani duplikacji',
+    () => {
+      const poczatek = wartosc(utworzSesje(quiz, 'sesja', czas));
+      const kopia = structuredClone(poczatek);
+      const trzecie = wartosc(przejdzDoPytania(poczatek, 'trzecie', czas));
+      const odpowiedz = wybierz(trzecie, 'szczegolowy');
+      const pierwsze = wartosc(przejdzDoPytania(odpowiedz, 'podzial', czas));
+      const wynik = wybierz(pierwsze, 'prosty');
+      oczekuj(poczatek).toEqual(kopia);
+      oczekuj(wynik.sesja.decyzje).toHaveLength(2);
+      oczekuj(wartosc(wznowSesje(quiz, wynik.sesja))).toEqual(wynik);
+      oczekuj(przejdzDoPytania(wynik, 'nieistniejace', czas).stan).toBe('blad');
+      oczekuj(wartosc(przejdzDoPytania(wynik, 'podzial', czas))).toBe(wynik);
+      oczekuj(przejdzDalej(poczatek.przebieg).stan).toBe('blad');
+      oczekuj(
+        aktualizujSesje(
+          poczatek,
+          {
+            stan: 'gotowy',
+            wartosc: {
+              ...poczatek.przebieg,
+              indeksPytania: quiz.pytania.length,
+            },
+          },
+          czas,
+        ).stan,
+      ).toBe('blad');
+    },
+  );
   sprawdz.each([
     ['prosty', 'szczegolowy'],
     ['prosty', 'szczegolowy', 'prosty'],

@@ -27,6 +27,8 @@ import {
 import { walidujImportQuizu } from '../../src/import/walidator';
 import { quizTekstowy } from '../domena/przyklady';
 import { odczytajSesje } from '../../src/dane/sesje';
+import { wznowSesje } from '../../src/silnik/sesja';
+import { schematQuizu } from '../../src/domena/quiz';
 
 const quiz = {
   ...quizTekstowy,
@@ -88,6 +90,163 @@ async function otworz(dane: unknown = quiz, sciezka = '/biblioteka') {
 
 opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
   sprawdz(
+    'przełącza widoki bez zapisów i zachowuje decyzje udzielone poza kolejnością po restarcie',
+    async () => {
+      const osoba = await otworz();
+      const pojedyncze = await ekran.findByRole('button', {
+        name: 'Pojedyncze pytania',
+      });
+      oczekuj(pojedyncze).toHaveAttribute('aria-pressed', 'true');
+      oczekuj(
+        ekran.queryByRole('heading', { name: 'Kolejne pytanie?' }),
+      ).not.toBeInTheDocument();
+      const poczatek = (await odczytajSesje())[0]!;
+      await kliknij(osoba, ekran.getByRole('button', { name: 'Widok pełny' }));
+      oczekuj(
+        ekran.getByRole('heading', { name: 'Kolejne pytanie?' }),
+      ).toBeVisible();
+      oczekuj(
+        ekran.getAllByRole('region', { name: /^Pytanie \d+$/ }),
+      ).toHaveLength(2);
+      const drugie = wewnatrz(ekran.getByRole('region', { name: 'Pytanie 2' }));
+      await kliknij(
+        osoba,
+        drugie.getByRole('button', { name: 'Wybierz: Szczegółowy' }),
+      );
+      oczekuj(
+        drugie.getByRole('button', { name: 'Wybierz: Szczegółowy' }),
+      ).toHaveAttribute('aria-pressed', 'true');
+      const zapis = (await odczytajSesje())[0]!;
+      oczekuj(zapis.decyzje).toHaveLength(1);
+      oczekuj(zapis.decyzje[0]?.pytanieId).toBe('drugie');
+      oczekuj(wznowSesje(schematQuizu.parse(quiz), zapis).stan).toBe('gotowy');
+      await kliknij(osoba, pojedyncze);
+      oczekuj(
+        ekran.getByRole('heading', { level: 1, name: 'Kolejne pytanie?' }),
+      ).toHaveFocus();
+      oczekuj(
+        ekran.getByRole('button', { name: 'Wybierz: Szczegółowy' }),
+      ).toHaveAttribute('aria-pressed', 'true');
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: '← Poprzednie pytanie' }),
+      );
+      oczekuj(
+        ekran.getByRole('button', { name: '← Poprzednie pytanie' }),
+      ).toBeDisabled();
+      oczekuj(
+        ekran.getByRole('button', { name: 'Następne pytanie →' }),
+      ).toBeDisabled();
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: 'Wybierz: Prosty' }),
+      );
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: 'Następne pytanie →' }),
+      );
+      await kliknij(osoba, ekran.getByRole('button', { name: 'Widok pełny' }));
+      oczekuj(
+        wewnatrz(ekran.getByRole('region', { name: 'Pytanie 1' })).getByRole(
+          'button',
+          { name: 'Wybierz: Prosty' },
+        ),
+      ).toHaveAttribute('aria-pressed', 'true');
+      const przedPrzelaczeniem = (await odczytajSesje())[0]!;
+      await kliknij(osoba, pojedyncze);
+      await kliknij(osoba, ekran.getByRole('button', { name: 'Widok pełny' }));
+      oczekuj((await odczytajSesje())[0]).toEqual(przedPrzelaczeniem);
+      oczekuj(przedPrzelaczeniem.decyzje).toHaveLength(2);
+      oczekuj(poczatek.decyzje).toHaveLength(0);
+      posprzataj();
+      pokaz(
+        <Router initialEntries={[`/sesja/${zapis.id}`]}>
+          <Aplikacja />
+        </Router>,
+      );
+      oczekuj(
+        await ekran.findByRole('button', { name: 'Wybierz: Szczegółowy' }),
+      ).toHaveAttribute('aria-pressed', 'true');
+    },
+  );
+  sprawdz(
+    'autosave komentarza w pełnym widoku zachowuje inne decyzje i blokuje zmianę widoku podczas edycji',
+    async () => {
+      const osoba = await otworz();
+      await kliknij(
+        osoba,
+        await ekran.findByRole('button', { name: 'Widok pełny' }),
+      );
+      const drugie = wewnatrz(ekran.getByRole('region', { name: 'Pytanie 2' }));
+      await kliknij(
+        osoba,
+        drugie.getByRole('button', { name: 'Wybierz: Prosty' }),
+      );
+      const pierwsze = wewnatrz(
+        ekran.getByRole('region', { name: 'Pytanie 1' }),
+      );
+      await osoba.type(
+        pierwsze.getByLabelText('Komentarz (opcjonalny)'),
+        'Komentarz pierwszego',
+      );
+      oczekuj(
+        ekran.getByRole('button', { name: 'Pojedyncze pytania' }),
+      ).toBeDisabled();
+      oczekuj(
+        drugie.getByRole('button', { name: 'Wybierz: Szczegółowy' }),
+      ).toBeDisabled();
+      await poczekaj(() =>
+        oczekuj(
+          ekran.getByRole('button', { name: 'Pojedyncze pytania' }),
+        ).toBeEnabled(),
+      );
+      await kliknij(
+        osoba,
+        pierwsze.getByRole('button', { name: 'Wybierz: Szczegółowy' }),
+      );
+      await kliknij(
+        osoba,
+        pierwsze.getByRole('button', {
+          name: 'Zapisz odpowiedź z komentarzem',
+        }),
+      );
+      const zapis = (await odczytajSesje())[0]!;
+      oczekuj(zapis.decyzje).toHaveLength(2);
+      oczekuj(
+        zapis.decyzje.find((decyzja) => decyzja.pytanieId === 'podzial')
+          ?.notatka,
+      ).toBe('Komentarz pierwszego');
+      oczekuj(wznowSesje(schematQuizu.parse(quiz), zapis).stan).toBe('gotowy');
+    },
+  );
+  sprawdz(
+    'pokazuje kompaktowy bilans z dostępnymi etykietami i nie wybiera rekomendacji',
+    async () => {
+      await otworz();
+      const wybor = await ekran.findByRole('button', {
+        name: 'Wybierz: Prosty',
+      });
+      const wariant = wybor.closest('article')!;
+      oczekuj(wewnatrz(wariant).getByText('+')).toBeVisible();
+      oczekuj(wewnatrz(wariant).getByText('−')).toBeVisible();
+      oczekuj(wewnatrz(wariant).getByText('Zaleta:')).toBeInTheDocument();
+      oczekuj(wewnatrz(wariant).getByText('Wada:')).toBeInTheDocument();
+      oczekuj(
+        wewnatrz(wariant).queryByRole('heading', { name: 'Zalety' }),
+      ).not.toBeInTheDocument();
+      oczekuj(
+        wewnatrz(wariant).queryByRole('heading', { name: 'Wady' }),
+      ).not.toBeInTheDocument();
+      oczekuj(wybor).toHaveAttribute('aria-pressed', 'false');
+      oczekuj(
+        ekran.getByRole('button', { name: '← Poprzednie pytanie' }),
+      ).toBeDisabled();
+      oczekuj(
+        ekran.getByRole('button', { name: 'Następne pytanie →' }),
+      ).toBeDisabled();
+    },
+  );
+  sprawdz(
     'pokazuje wszystkie adaptacje i Dlaczego, odtwarza je z IndexedDB po restarcie',
     async () => {
       const definicja = {
@@ -143,6 +302,20 @@ opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
         osoba,
         await ekran.findByRole('button', { name: 'Wybierz: Prosty' }),
       );
+      await kliknij(osoba, ekran.getByRole('button', { name: 'Widok pełny' }));
+      oczekuj(
+        ekran.getAllByRole('region', { name: /^Pytanie \d+$/ }),
+      ).toHaveLength(3);
+      oczekuj(
+        ekran.getByRole('heading', { name: 'Pytanie dodatkowe?' }),
+      ).toBeVisible();
+      oczekuj(
+        ekran.getByRole('heading', { name: 'Dostosowane pytanie?' }),
+      ).toBeVisible();
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: 'Pojedyncze pytania' }),
+      );
       const zmiany = ekran.getByRole('region', { name: 'Zmiany adaptacyjne' });
       for (const oznaczenie of [
         'Pytanie dodane',
@@ -162,7 +335,10 @@ opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
       oczekuj(
         wewnatrz(zmiany).getAllByText('Odpowiedź źródłowa: Prosty'),
       ).toHaveLength(3);
-      await kliknij(osoba, ekran.getByRole('button', { name: 'Dalej' }));
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: 'Następne pytanie →' }),
+      );
       oczekuj(
         ekran.getByRole('heading', { level: 1, name: 'Pytanie dodatkowe?' }),
       ).toBeVisible();
@@ -187,7 +363,10 @@ opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
         ekran.getByRole('region', { name: 'Zmiany adaptacyjne' }),
       ).toBeVisible();
       oczekuj((await odczytajSesje())[0]).toEqual(zapis);
-      await kliknij(osoba, ekran.getByRole('button', { name: 'Wstecz' }));
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: '← Poprzednie pytanie' }),
+      );
       await kliknij(
         osoba,
         ekran.getByRole('button', { name: 'Wybierz: Szczegółowy' }),
@@ -266,7 +445,10 @@ opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
         osoba,
         await ekran.findByRole('button', { name: 'Wybierz: Czwarty' }),
       );
-      await kliknij(osoba, ekran.getByRole('button', { name: 'Dalej' }));
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: 'Następne pytanie →' }),
+      );
       const zapisane = (await odczytajSesje())[0]!;
       oczekuj(zapisane.biezacePytanieId).toBe('drugie');
       posprzataj();
@@ -279,7 +461,10 @@ opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
         await ekran.findByRole('heading', { name: 'Kolejne pytanie?' }),
       ).toHaveFocus();
       oczekuj((await odczytajSesje())[0]).toEqual(zapisane);
-      await kliknij(osoba, ekran.getByRole('button', { name: 'Wstecz' }));
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: '← Poprzednie pytanie' }),
+      );
       oczekuj(
         ekran.getByRole('button', { name: 'Wybierz: Czwarty' }),
       ).toHaveAttribute('aria-pressed', 'true');
@@ -361,7 +546,10 @@ opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
         osoba,
         ekran.getByRole('button', { name: 'Wybierz: Prosty' }),
       );
-      await kliknij(osoba, ekran.getByRole('button', { name: 'Dalej' }));
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: 'Następne pytanie →' }),
+      );
       oczekuj(
         ekran.getByRole('heading', { name: 'Pytania odłożone' }),
       ).toHaveFocus();
@@ -390,8 +578,14 @@ opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
       oczekuj(
         ekran.queryByRole('region', { name: 'Lista odłożonych pytań' }),
       ).not.toBeInTheDocument();
-      await kliknij(osoba, ekran.getByRole('button', { name: 'Dalej' }));
-      await kliknij(osoba, ekran.getByRole('button', { name: 'Dalej' }));
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: 'Następne pytanie →' }),
+      );
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: 'Następne pytanie →' }),
+      );
       oczekuj(
         ekran.getByRole('heading', { name: 'Quiz zakończony' }),
       ).toBeVisible();
@@ -472,8 +666,12 @@ opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
       oczekuj(polecany).toHaveAttribute('aria-pressed', 'false');
       oczekuj(polecany.closest('article')).toHaveClass('rekomendowany');
       oczekuj(polecany.closest('article')).not.toHaveClass('wybrany');
-      oczekuj(ekran.getByRole('button', { name: 'Dalej' })).toBeDisabled();
-      oczekuj(ekran.getByRole('button', { name: 'Wstecz' })).toBeDisabled();
+      oczekuj(
+        ekran.getByRole('button', { name: 'Następne pytanie →' }),
+      ).toBeDisabled();
+      oczekuj(
+        ekran.getByRole('button', { name: '← Poprzednie pytanie' }),
+      ).toBeDisabled();
       oczekuj(
         ekran.queryByRole('button', { name: 'Wróć później' }),
       ).toBeVisible();
@@ -499,11 +697,17 @@ opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
       oczekuj(
         ekran.getByRole('button', { name: 'Wybierz: Prosty' }),
       ).toHaveAttribute('aria-pressed', 'false');
-      await kliknij(osoba, ekran.getByRole('button', { name: 'Dalej' }));
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: 'Następne pytanie →' }),
+      );
       oczekuj(
         ekran.getByRole('heading', { name: 'Kolejne pytanie?' }),
       ).toHaveFocus();
-      await kliknij(osoba, ekran.getByRole('button', { name: 'Wstecz' }));
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: '← Poprzednie pytanie' }),
+      );
       oczekuj(
         ekran.getByRole('button', { name: 'Wybierz: Czwarty' }),
       ).toHaveAttribute('aria-pressed', 'true');
@@ -519,16 +723,25 @@ opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
       oczekuj(
         wewnatrz(polecany.closest('article')!).getByText('Twój wybór'),
       ).toBeVisible();
-      await kliknij(osoba, ekran.getByRole('button', { name: 'Dalej' }));
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: 'Następne pytanie →' }),
+      );
       await kliknij(
         osoba,
         ekran.getByRole('button', { name: 'Wybierz: Szczegółowy' }),
       );
-      await kliknij(osoba, ekran.getByRole('button', { name: 'Dalej' }));
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: 'Następne pytanie →' }),
+      );
       oczekuj(
         ekran.getByRole('heading', { name: 'Quiz zakończony' }),
       ).toHaveFocus();
-      await kliknij(osoba, ekran.getByRole('button', { name: 'Wstecz' }));
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: '← Poprzednie pytanie' }),
+      );
       oczekuj(
         ekran.getByRole('button', { name: 'Wybierz: Szczegółowy' }),
       ).toHaveAttribute('aria-pressed', 'true');
@@ -587,7 +800,9 @@ opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
       oczekuj(
         ekran.queryByRole('button', { name: /^Wybierz:/ }),
       ).not.toBeInTheDocument();
-      oczekuj(ekran.getByRole('button', { name: 'Dalej' })).toBeDisabled();
+      oczekuj(
+        ekran.getByRole('button', { name: 'Następne pytanie →' }),
+      ).toBeDisabled();
     },
   );
 
@@ -599,7 +814,10 @@ opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
         osoba,
         await ekran.findByRole('button', { name: 'Wybierz: Prosty' }),
       );
-      await kliknij(osoba, ekran.getByRole('button', { name: 'Dalej' }));
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: 'Następne pytanie →' }),
+      );
       await kliknij(
         osoba,
         ekran.getByRole('link', { name: 'Wróć do Biblioteki' }),

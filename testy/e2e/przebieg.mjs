@@ -133,7 +133,7 @@ try {
     await przycisk('Rozpocznij nową').click();
     await naglowek('Czy aktualizacja powinna mieć własny tytuł?');
     await przycisk('Wybierz: Tytuł obowiązkowy.').click();
-    await przycisk('Dalej').click();
+    await przycisk('Następne pytanie →').click();
     await naglowek('Który układ wybrać?');
     const adresSesji = strona.url();
     await strona
@@ -144,20 +144,20 @@ try {
     oczekuj.equal(strona.url(), adresSesji);
     await strona.reload();
     await naglowek('Który układ wybrać?');
-    await przycisk('Wstecz').click();
+    await przycisk('← Poprzednie pytanie').click();
     await naglowek('Czy aktualizacja powinna mieć własny tytuł?');
     await przycisk('Wybierz: Tytuł opcjonalny.').click();
-    await przycisk('Dalej').click();
+    await przycisk('Następne pytanie →').click();
     await naglowek('Który układ wybrać?');
     await przycisk('Wybierz: Szczegółowy układ.').click();
     await strona
       .getByLabel('Komentarz (opcjonalny)')
       .fill('Zażółć gęślą jaźń — moja uwaga.');
     await przycisk('Zapisz odpowiedź z komentarzem').click();
-    await przycisk('Dalej').click();
+    await przycisk('Następne pytanie →').click();
     await naglowek('Czy dodać opis?');
     await przycisk('Wybierz: Dodać opis.').click();
-    await przycisk('Dalej').click();
+    await przycisk('Następne pytanie →').click();
     await naglowek('Quiz zakończony');
     await strona
       .getByRole('heading', {

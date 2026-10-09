@@ -100,7 +100,9 @@ opisz('Ekran analizowanej własnej odpowiedzi', () => {
       oczekuj(
         ekran.getByRole('textbox', { name: 'Treść własnej odpowiedzi' }),
       ).toBeDisabled();
-      oczekuj(ekran.getByRole('button', { name: 'Dalej' })).toBeDisabled();
+      oczekuj(
+        ekran.getByRole('button', { name: 'Następne pytanie →' }),
+      ).toBeDisabled();
       oczekuj((await odczytajSesje())[0]!.decyzje).toEqual([]);
       zakoncz();
       await ekran.findByRole('button', { name: 'Zatwierdź odpowiedź' });
@@ -138,7 +140,9 @@ opisz('Ekran analizowanej własnej odpowiedzi', () => {
       const przeanalizowana = await zapis();
       oczekuj(przeanalizowana.decyzje).toEqual([]);
       oczekuj(przeanalizowana.dziennikSesji!.zdarzenia).toEqual([]);
-      oczekuj(ekran.getByRole('button', { name: 'Dalej' })).toBeDisabled();
+      oczekuj(
+        ekran.getByRole('button', { name: 'Następne pytanie →' }),
+      ).toBeDisabled();
       oczekuj(
         ekran.getByRole('heading', { name: 'Niejednoznaczności' }),
       ).toBeVisible();
@@ -155,14 +159,20 @@ opisz('Ekran analizowanej własnej odpowiedzi', () => {
         tekst: 'Mój kierunek',
       });
       oczekuj(potwierdzona.dziennikSesji!.zdarzenia).toHaveLength(1);
-      oczekuj(ekran.getByRole('button', { name: 'Dalej' })).toBeEnabled();
+      oczekuj(
+        ekran.getByRole('button', { name: 'Następne pytanie →' }),
+      ).toBeEnabled();
       await osoba.click(ekran.getByRole('button', { name: 'Wybierz: Prosty' }));
       await zapis();
       oczekuj(
         ekran.getByRole('textbox', { name: 'Treść własnej odpowiedzi' }),
       ).toHaveValue('');
-      oczekuj(ekran.getByRole('button', { name: 'Dalej' })).toBeEnabled();
-      await osoba.click(ekran.getByRole('button', { name: 'Dalej' }));
+      oczekuj(
+        ekran.getByRole('button', { name: 'Następne pytanie →' }),
+      ).toBeEnabled();
+      await osoba.click(
+        ekran.getByRole('button', { name: 'Następne pytanie →' }),
+      );
       await zapis();
       oczekuj(
         ekran.getByRole('heading', { level: 1, name: 'Quiz zakończony' }),

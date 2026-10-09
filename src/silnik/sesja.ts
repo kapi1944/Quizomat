@@ -267,3 +267,26 @@ export function wrocDoPytania(
     czas,
   );
 }
+
+// Nawigacja prezentacyjna używa istniejącego dziennika i aktualnej projekcji.
+export function przejdzDoPytania(
+  stan: PrzebiegSesji,
+  pytanieId: string,
+  czas: string,
+): Wynik<PrzebiegSesji> {
+  const indeks = stan.przebieg.pytania.findIndex(
+    (pytanie) => pytanie.id === pytanieId,
+  );
+  if (indeks < 0)
+    return { stan: 'blad', opis: 'Pytanie nie jest obecnie dostępne.' };
+  if (indeks === stan.przebieg.indeksPytania)
+    return { stan: 'gotowy', wartosc: stan };
+  return aktualizujSesje(
+    stan,
+    {
+      stan: 'gotowy',
+      wartosc: { ...stan.przebieg, indeksPytania: indeks },
+    },
+    czas,
+  );
+}
