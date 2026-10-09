@@ -62,6 +62,9 @@ export function Biblioteka() {
   return (
     <section className="panel">
       <h1>Biblioteka</h1>
+      <Odnosnik className="przycisk" to="/nowy-quiz">
+        + Stwórz nowy quiz
+      </Odnosnik>
       {blad ? (
         <div role="alert">
           <p>{blad}</p>
@@ -78,7 +81,7 @@ export function Biblioteka() {
       ) : wpisy === null ? (
         <p role="status">Wczytywanie biblioteki…</p>
       ) : wpisy.length === 0 ? (
-        <p>Biblioteka jest pusta. Zaimportuj i zatwierdź pierwszy quiz.</p>
+        <p>Biblioteka jest pusta. Stwórz własny quiz lub zaimportuj gotowy.</p>
       ) : (
         <ul>
           {wpisy.map(({ quiz, daneZrodlowe }) => (

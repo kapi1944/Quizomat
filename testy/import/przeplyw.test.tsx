@@ -175,7 +175,7 @@ opisz('Raport i decyzja użytkownika', () => {
         await ekran.findByRole('heading', { name: '1 z 1 pytań poprawnych' });
       } else
         await ekran.findByText(
-          'Biblioteka jest pusta. Zaimportuj i zatwierdź pierwszy quiz.',
+          'Biblioteka jest pusta. Stwórz własny quiz lub zaimportuj gotowy.',
         );
     },
   );

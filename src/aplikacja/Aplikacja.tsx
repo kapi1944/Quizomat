@@ -9,6 +9,7 @@ import { Ustawienia } from './Ustawienia';
 import { KomunikatPwa } from '../komponenty/KomunikatPwa';
 import { ImportQuizu } from './ImportQuizu';
 import { Biblioteka } from './Biblioteka';
+import { KreatorQuizu } from './KreatorQuizu';
 
 export function Aplikacja() {
   return (
@@ -68,6 +69,7 @@ export function Aplikacja() {
             }
           />
           <Trasa path="/biblioteka" element={<Biblioteka />} />
+          <Trasa path="/nowy-quiz" element={<KreatorQuizu />} />
           <Trasa path="/import" element={<ImportQuizu />} />
           <Trasa path="/sesja/:sesjaId" element={<EkranQuizu />} />
           <Trasa path="/ustawienia" element={<Ustawienia />} />

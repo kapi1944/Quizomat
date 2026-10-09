@@ -32,6 +32,7 @@ import {
 import type { PrzebiegSesji } from '../silnik/sesja';
 import type { Decyzja } from '../domena/sesja';
 import type { Quiz } from '../domena/quiz';
+import { opiszOdpowiedz } from '../eksport/raport';
 
 function opisDecyzji(quiz: Quiz, decyzja: Decyzja | null): string {
   if (!decyzja) return 'Brak odpowiedzi';
@@ -179,7 +180,10 @@ function PrzebiegQuizu({
 }) {
   const [zapisany, ustawZapisany] = stan(poczatek);
   const aktualnyZapis = referencja(poczatek);
-  const [tryb, ustawTryb] = stan<'pojedynczy' | 'pelny'>('pojedynczy');
+  const [tryb, ustawTryb] = stan<'pojedynczy' | 'pelny' | 'podglad'>(
+    'pojedynczy',
+  );
+  const [podglad, ustawPodglad] = stan<'pelny' | 'kompaktowy'>('kompaktowy');
   const [blokady, ustawBlokady] = stan<Record<string, boolean>>({});
   const blokadaSzkicu = Object.entries(blokady).some(
     ([klucz, wartosc]) => klucz.endsWith('-wlasna') && wartosc,
@@ -282,7 +286,7 @@ function PrzebiegQuizu({
     <section className="panel ekran-quizu" aria-label={przebieg.quiz.tytul}>
       <p className="nadtytul">{przebieg.quiz.tytul}</p>
       <div className="tryb-widoku" role="group" aria-label="Tryb widoku quizu">
-        {(['pojedynczy', 'pelny'] as const).map((wartosc) => (
+        {(['pojedynczy', 'pelny', 'podglad'] as const).map((wartosc) => (
           <button
             key={wartosc}
             className="przycisk"
@@ -292,22 +296,48 @@ function PrzebiegQuizu({
             }
             onClick={() => ustawTryb(wartosc)}
           >
-            {wartosc === 'pojedynczy' ? 'Pojedyncze pytania' : 'Widok pełny'}
+            {
+              {
+                pojedynczy: 'Pojedyncze pytania',
+                pelny: 'Widok pełny',
+                podglad: 'Podgląd odpowiedzi',
+              }[wartosc]
+            }
           </button>
         ))}
       </div>
+      {tryb === 'podglad' && (
+        <div
+          className="tryb-widoku"
+          role="group"
+          aria-label="Tryb podglądu odpowiedzi"
+        >
+          {(['pelny', 'kompaktowy'] as const).map((wartosc) => (
+            <button
+              key={wartosc}
+              className="przycisk"
+              aria-pressed={podglad === wartosc}
+              onClick={() => ustawPodglad(wartosc)}
+            >
+              {wartosc === 'pelny' ? 'Pełny' : 'Kompaktowy'}
+            </button>
+          ))}
+        </div>
+      )}
       {pytanie && tryb === 'pojedynczy' && (
         <p className="licznik-pytan">
           Pytanie {przebieg.indeksPytania + 1} z {przebieg.pytania.length}
         </p>
       )}
       <h1 ref={naglowek} tabIndex={-1}>
-        {tryb === 'pelny'
-          ? 'Widok pełny'
-          : (pytanie?.tresc ??
-            (zapisany.sesja.stan === 'zakonczona'
-              ? 'Quiz zakończony'
-              : 'Pytania odłożone'))}
+        {tryb === 'podglad'
+          ? 'Podgląd odpowiedzi'
+          : tryb === 'pelny'
+            ? 'Widok pełny'
+            : (pytanie?.tresc ??
+              (zapisany.sesja.stan === 'zakonczona'
+                ? 'Quiz zakończony'
+                : 'Pytania odłożone'))}
       </h1>
       <p className="informacja" role="status">
         {zapisywanie
@@ -347,68 +377,79 @@ function PrzebiegQuizu({
           </ul>
         </section>
       )}
-      {(tryb === 'pelny' ? przebieg.pytania : pytanie ? [pytanie] : []).map(
-        (widocznePytanie) => {
-          const wynik = przejdzDoPytania(
-            zapisany,
-            widocznePytanie.id,
-            new Date().toISOString(),
-          );
-          if (wynik.stan !== 'gotowy') return null;
-          const indeks = przebieg.pytania.findIndex(
-            (element) => element.id === widocznePytanie.id,
-          );
-          const inneBlokady = Object.entries(blokady).some(
-            ([klucz, wartosc]) =>
-              wartosc &&
-              klucz !== `${widocznePytanie.id}-wlasna` &&
-              klucz !== `${widocznePytanie.id}-standardowa`,
-          );
-          return (
-            <section
-              className="pytanie-quizu"
-              key={widocznePytanie.id}
-              aria-label={`Pytanie ${indeks + 1}`}
-            >
-              {tryb === 'pelny' && (
-                <>
-                  <p className="licznik-pytan">
-                    {indeks + 1} / {przebieg.pytania.length}
-                  </p>
-                  <h2>{widocznePytanie.tresc}</h2>
-                </>
-              )}
-              <fieldset
-                className="zawartosc-pytania"
-                disabled={inneBlokady || oczekujacy !== null}
-              >
-                <legend className="tylko-czytnik">
-                  Odpowiedź na pytanie {indeks + 1}
-                </legend>
-                <PytanieQuizu
-                  zapisany={wynik.wartosc}
-                  analizator={analizator}
-                  pokazuj={pokazuj}
-                  oczekujacy={oczekujacy}
-                  blokadaSzkicu={blokadaSzkicu}
-                  blokadaStandardowa={blokadaStandardowa}
-                  ustawBlokadePytania={ustawBlokadePytania}
-                  zapiszWlasna={zapiszWlasna}
-                  zastosuj={(wynikDecyzji) =>
-                    zastosujSesje(
-                      aktualizujSesje(
-                        wynik.wartosc,
-                        wynikDecyzji,
-                        new Date().toISOString(),
-                      ),
-                    )
-                  }
-                />
-              </fieldset>
-            </section>
-          );
-        },
+      {tryb === 'podglad' && (
+        <p className="informacja">
+          Podgląd pokazuje zatwierdzone odpowiedzi. Szkice nie są odpowiedziami.
+          {podglad === 'kompaktowy' &&
+            ' Warianty są ukryte; wybrane opcje pozostają w treści odpowiedzi.'}
+        </p>
       )}
+      {(tryb !== 'pojedynczy'
+        ? przebieg.pytania
+        : pytanie
+          ? [pytanie]
+          : []
+      ).map((widocznePytanie) => {
+        const wynik = przejdzDoPytania(
+          zapisany,
+          widocznePytanie.id,
+          new Date().toISOString(),
+        );
+        if (wynik.stan !== 'gotowy') return null;
+        const indeks = przebieg.pytania.findIndex(
+          (element) => element.id === widocznePytanie.id,
+        );
+        const inneBlokady = Object.entries(blokady).some(
+          ([klucz, wartosc]) =>
+            wartosc &&
+            klucz !== `${widocznePytanie.id}-wlasna` &&
+            klucz !== `${widocznePytanie.id}-standardowa`,
+        );
+        return (
+          <section
+            className={`pytanie-quizu${tryb === 'podglad' && podglad === 'kompaktowy' ? ' podglad-kompaktowy' : ''}`}
+            key={widocznePytanie.id}
+            aria-label={`Pytanie ${indeks + 1}`}
+          >
+            {tryb !== 'pojedynczy' && (
+              <>
+                <p className="licznik-pytan">
+                  {indeks + 1} / {przebieg.pytania.length}
+                </p>
+                <h2>{widocznePytanie.tresc}</h2>
+              </>
+            )}
+            <fieldset
+              className="zawartosc-pytania"
+              disabled={inneBlokady || oczekujacy !== null}
+            >
+              <legend className="tylko-czytnik">
+                Odpowiedź na pytanie {indeks + 1}
+              </legend>
+              <PytanieQuizu
+                zapisany={wynik.wartosc}
+                analizator={analizator}
+                pokazuj={pokazuj}
+                podglad={tryb === 'podglad' ? podglad : null}
+                oczekujacy={oczekujacy}
+                blokadaSzkicu={blokadaSzkicu}
+                blokadaStandardowa={blokadaStandardowa}
+                ustawBlokadePytania={ustawBlokadePytania}
+                zapiszWlasna={zapiszWlasna}
+                zastosuj={(wynikDecyzji) =>
+                  zastosujSesje(
+                    aktualizujSesje(
+                      wynik.wartosc,
+                      wynikDecyzji,
+                      new Date().toISOString(),
+                    ),
+                  )
+                }
+              />
+            </fieldset>
+          </section>
+        );
+      })}
       {!pytanie && (
         <>
           <p role="status">
@@ -421,13 +462,15 @@ function PrzebiegQuizu({
         </>
       )}
       {blad && <p role="alert">{blad}</p>}
-      {zapisany.sesja.stan === 'zakonczona' && !pytanie && (
-        <PodsumowanieQuizu
-          quiz={przebieg.quiz}
-          sesja={zapisany.sesja}
-          niekompletnyImport={niekompletnyImport}
-        />
-      )}
+      {zapisany.sesja.stan === 'zakonczona' &&
+        !pytanie &&
+        tryb !== 'podglad' && (
+          <PodsumowanieQuizu
+            quiz={przebieg.quiz}
+            sesja={zapisany.sesja}
+            niekompletnyImport={niekompletnyImport}
+          />
+        )}
       <details className="historia-decyzji">
         <summary>Historia decyzji</summary>
         <p>
@@ -601,6 +644,7 @@ function PytanieQuizu({
   zapisany,
   analizator,
   pokazuj,
+  podglad,
   oczekujacy,
   blokadaSzkicu,
   blokadaStandardowa,
@@ -611,6 +655,7 @@ function PytanieQuizu({
   zapisany: PrzebiegSesji;
   analizator: Analizator;
   pokazuj: boolean;
+  podglad: 'pelny' | 'kompaktowy' | null;
   oczekujacy: PrzebiegSesji | null;
   blokadaSzkicu: boolean;
   blokadaStandardowa: boolean;
@@ -634,8 +679,49 @@ function PytanieQuizu({
   const pojedynczy =
     pytanie.sposobyOdpowiedzi.length === 1 &&
     pytanie.sposobyOdpowiedzi[0]?.rodzaj === 'pojedynczyWybor';
+  const decyzja = zapisany.sesja.decyzje.find(
+    (decyzja) => decyzja.pytanieId === pytanie.id,
+  );
+  const odpowiedz = podglad && (
+    <div className="podglad-odpowiedzi">
+      {decyzja ? (
+        <dl>
+          {opiszOdpowiedz(pytanie, decyzja.odpowiedz).map((pole, indeks) => (
+            <div key={indeks}>
+              <dt>{pole.etykieta}</dt>
+              <dd className="tresc-raportu">{pole.tekst}</dd>
+            </div>
+          ))}
+          {decyzja.notatka && (
+            <div>
+              <dt>Twój komentarz</dt>
+              <dd className="tresc-raportu">{decyzja.notatka}</dd>
+            </div>
+          )}
+          {decyzja.adnotacje.map((adnotacja) => (
+            <div key={adnotacja.id}>
+              <dt>
+                Twoja adnotacja
+                {adnotacja.wariantId &&
+                  ` — ${pytanie.warianty.find((wariant) => wariant.id === adnotacja.wariantId)?.etykieta ?? adnotacja.wariantId}`}
+              </dt>
+              <dd className="tresc-raportu">{adnotacja.tekst}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : (
+        <p>
+          {zapisany.sesja.odlozonePytaniaId.includes(pytanie.id)
+            ? 'Odłożone — brak zatwierdzonej odpowiedzi.'
+            : 'Brak zatwierdzonej odpowiedzi.'}
+        </p>
+      )}
+    </div>
+  );
+  if (podglad === 'kompaktowy') return odpowiedz;
   return (
     <>
+      {odpowiedz}
       {pytanie.wyjasnienie && <p>{pytanie.wyjasnienie}</p>}
       {pytanie.prezentacja.obrazy?.map((obraz) => (
         <img
@@ -706,7 +792,7 @@ function PytanieQuizu({
                     </div>
                   )}
                   {wariant.wyjasnienie && <p>{wariant.wyjasnienie}</p>}
-                  {pojedynczy && (
+                  {pojedynczy && !podglad && (
                     <button
                       className="przycisk"
                       disabled={
@@ -732,15 +818,17 @@ function PytanieQuizu({
               );
             })}
           </div>
-          <OdpowiedzStandardowa
-            key={`standardowa-${pytanie.id}-${zapisany.sesja.decyzje.find((decyzja) => decyzja.pytanieId === pytanie.id)?.id ?? 'brak'}`}
-            przebieg={zapisany}
-            zapisz={zapiszWlasna}
-            zablokowany={oczekujacy !== null || blokadaSzkicu}
-            ustawBlokade={ustawBlokadeStandardowa}
-            tylkoKomentarz={pojedynczy}
-          />
-          {pytanie.innaOdpowiedz && (
+          {!podglad && (
+            <OdpowiedzStandardowa
+              key={`standardowa-${pytanie.id}-${zapisany.sesja.decyzje.find((decyzja) => decyzja.pytanieId === pytanie.id)?.id ?? 'brak'}`}
+              przebieg={zapisany}
+              zapisz={zapiszWlasna}
+              zablokowany={oczekujacy !== null || blokadaSzkicu}
+              ustawBlokade={ustawBlokadeStandardowa}
+              tylkoKomentarz={pojedynczy}
+            />
+          )}
+          {!podglad && pytanie.innaOdpowiedz && (
             <OdpowiedzWlasna
               key={`${pytanie.id}-${zapisany.sesja.decyzje.find((decyzja) => decyzja.pytanieId === pytanie.id)?.id ?? 'brak'}`}
               przebieg={zapisany}

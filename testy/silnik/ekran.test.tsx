@@ -90,6 +90,67 @@ async function otworz(dane: unknown = quiz, sciezka = '/biblioteka') {
 
 opisz('Quiz uruchamiany z istniejącej Biblioteki', () => {
   sprawdz(
+    'podgląd kompresuje quiz, pokazuje zatwierdzone odpowiedzi i nie zmienia sesji',
+    async () => {
+      const osoba = await otworz();
+      await kliknij(
+        osoba,
+        await ekran.findByRole('button', { name: 'Wybierz: Prosty' }),
+      );
+      await osoba.type(
+        ekran.getByLabelText('Komentarz (opcjonalny)'),
+        'Komentarz do odpowiedzi',
+      );
+      await poczekaj(() =>
+        oczekuj(
+          ekran.getByRole('button', { name: 'Podgląd odpowiedzi' }),
+        ).toBeEnabled(),
+      );
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: 'Zapisz odpowiedź z komentarzem' }),
+      );
+      const zapis = (await odczytajSesje())[0]!;
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: 'Podgląd odpowiedzi' }),
+      );
+      oczekuj(
+        ekran.getByRole('button', { name: 'Kompaktowy' }),
+      ).toHaveAttribute('aria-pressed', 'true');
+      const pierwsze = wewnatrz(
+        ekran.getByRole('region', { name: 'Pytanie 1' }),
+      );
+      const drugie = wewnatrz(ekran.getByRole('region', { name: 'Pytanie 2' }));
+      oczekuj(pierwsze.getByText('Prosty')).toBeVisible();
+      oczekuj(pierwsze.getByText('Komentarz do odpowiedzi')).toBeVisible();
+      oczekuj(pierwsze.queryByText('Szczegółowy')).not.toBeInTheDocument();
+      oczekuj(pierwsze.queryByText('Mało kategorii.')).not.toBeInTheDocument();
+      oczekuj(drugie.getByText('Brak zatwierdzonej odpowiedzi.')).toBeVisible();
+      oczekuj(ekran.queryByRole('textbox')).not.toBeInTheDocument();
+      oczekuj(
+        ekran.queryByRole('button', { name: /^Wybierz:/ }),
+      ).not.toBeInTheDocument();
+      await kliknij(osoba, ekran.getByRole('button', { name: 'Pełny' }));
+      oczekuj(
+        pierwsze.getByRole('heading', { name: 'Szczegółowy' }),
+      ).toBeVisible();
+      oczekuj(pierwsze.getByText('Mało kategorii.')).toBeVisible();
+      oczekuj(pierwsze.getByText('Twój pojedynczy wybór')).toBeVisible();
+      oczekuj(ekran.queryByRole('textbox')).not.toBeInTheDocument();
+      await kliknij(osoba, ekran.getByRole('button', { name: 'Kompaktowy' }));
+      oczekuj((await odczytajSesje())[0]).toEqual(zapis);
+      await kliknij(
+        osoba,
+        ekran.getByRole('button', { name: 'Pojedyncze pytania' }),
+      );
+      oczekuj(
+        ekran.getByRole('button', { name: 'Wybierz: Prosty' }),
+      ).toHaveAttribute('aria-pressed', 'true');
+      oczekuj((await odczytajSesje())[0]).toEqual(zapis);
+    },
+  );
+  sprawdz(
     'przełącza widoki bez zapisów i zachowuje decyzje udzielone poza kolejnością po restarcie',
     async () => {
       const osoba = await otworz();
