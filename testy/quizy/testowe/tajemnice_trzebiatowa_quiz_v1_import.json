@@ -1,0 +1,2389 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "tajemnice-trzebiatowa-quiz-decyzji-projektowych-v1",
+  "wersjaQuizu": "1.0.0",
+  "tytul": "Tajemnice Trzebiatowa — Quiz decyzji projektowych v1",
+  "opis": "Quiz porządkujący otwarte decyzje dotyczące logiki, fabuły, kampanii, mechanik i wersji trylogii. Rekomendacja jest sugestią, nie automatycznym wyborem.",
+  "jezyk": "pl",
+  "liczbaPytan": 40,
+  "pytania": [
+    {
+      "id": "s01",
+      "tresc": "Co ma być nadrzędnym doświadczeniem całej trylogii?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "s01-a",
+          "etykieta": "Przede wszystkim interaktywny przewodnik historyczny",
+          "zalety": [
+            "Łatwiejsza dostępność dla turystów; mniejsze ryzyko, że fabuła przesłoni wiedzę o mieście."
+          ],
+          "wady": [
+            "Słabsza regrywalność i mniejsza waga decyzji; projekt może zacząć przypominać aplikację turystyczną."
+          ]
+        },
+        {
+          "id": "s01-b",
+          "etykieta": "Gra fabularno-terenowa oparta na historii miasta",
+          "zalety": [
+            "Najlepsza równowaga między zwiedzaniem, fabułą, zadaniami i decyzjami.",
+            "Pozwala każdej części mieć odrębne mechaniki wynikające z epoki."
+          ],
+          "wady": [
+            "Wymaga pilnowania, by fikcja była wyraźnie oddzielona od faktów historycznych."
+          ]
+        },
+        {
+          "id": "s01-c",
+          "etykieta": "Przede wszystkim gra fabularna, a historia jako tło",
+          "zalety": [
+            "Największa swoboda narracyjna i możliwość mocnych zwrotów akcji."
+          ],
+          "wady": [
+            "Największe ryzyko odejścia od lokalnego, edukacyjnego charakteru projektu."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "s01-b",
+        "uzasadnienie": "Najlepiej pasuje do dotychczasowego kierunku: prawdziwe miasto i historia są rdzeniem, ale gracz ma podejmować rzeczywiste decyzje i ponosić konsekwencje."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "s02",
+      "tresc": "Jak daleko wolno fabule odchodzić od źródeł?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "s02-a",
+          "etykieta": "Tylko zdarzenia i osoby potwierdzone źródłowo",
+          "zalety": ["Najwyższa wiarygodność historyczna."],
+          "wady": [
+            "Może mocno ograniczyć fabułę, szczególnie gdy lokalne źródła są niepełne."
+          ]
+        },
+        {
+          "id": "s02-b",
+          "etykieta": "Fikcja między faktami, jawnie oznaczona",
+          "zalety": [
+            "Duża swoboda bez fałszowania historii.",
+            "Dobrze pasuje do legendy, depeszy i rekonstruowanych historii zwykłych ludzi."
+          ],
+          "wady": [
+            "Wymaga konsekwentnych oznaczeń: fakt / legenda / rekonstrukcja / fikcja."
+          ]
+        },
+        {
+          "id": "s02-c",
+          "etykieta": "Alternatywna historia dopuszczalna w głównym kanonie",
+          "zalety": ["Największa swoboda tworzenia wielu wariantów wydarzeń."],
+          "wady": ["Może mylić gracza co do autentycznej historii Trzebiatowa."]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "s02-b",
+        "uzasadnienie": "Pozwala tworzyć atrakcyjne intrygi, ale nie przedstawia wymyślonych zdarzeń jako odkrytych faktów."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "s03",
+      "tresc": "Jak mocno trzy części mają zależeć od siebie fabularnie?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "s03-a",
+          "etykieta": "Trzy samodzielne gry, tylko motywy i echa łączą serię",
+          "zalety": [
+            "Każdą część można kupić i ukończyć osobno.",
+            "Nie trzeba przenosić decyzji między odległymi epokami."
+          ],
+          "wady": [
+            "Mniej bezpośrednich nagród dla osób, które przejdą całą trylogię."
+          ]
+        },
+        {
+          "id": "s03-b",
+          "etykieta": "Samodzielne gry, ale z metawątkiem przez trzy części",
+          "zalety": [
+            "Daje dodatkową nagrodę fanom trylogii i może łączyć kroniki/artefakty."
+          ],
+          "wady": [
+            "Metawątek może zacząć wymuszać sztuczne połączenia między epokami."
+          ]
+        },
+        {
+          "id": "s03-c",
+          "etykieta": "Jedna duża historia rozbita na trzy gry",
+          "zalety": ["Najmocniejsze poczucie sagi."],
+          "wady": [
+            "Największe ryzyko blokowania graczy i osłabienia lokalnej autonomii każdej części."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "s03-a",
+        "uzasadnienie": "Dotychczasowy rdzeń zakłada trzy samodzielne gry; spójność ma wynikać z miasta, pamięci i sposobu odkrywania historii."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "s04",
+      "tresc": "Dla jakiego sposobu grania projektujemy logikę jako podstawową?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "s04-a",
+          "etykieta": "Solo jako podstawa, grupa może grać wspólnie na jednym urządzeniu",
+          "zalety": ["Najprostsza i najbardziej niezawodna logika terenowa."],
+          "wady": ["Brak osobnych ról dla uczestników grupy."]
+        },
+        {
+          "id": "s04-b",
+          "etykieta": "Od początku równorzędnie solo i grupa",
+          "zalety": ["Szersza dostępność i potencjał rodzinny/turystyczny."],
+          "wady": [
+            "Każdą zagadkę i decyzję trzeba testować w dwóch modelach użycia."
+          ]
+        },
+        {
+          "id": "s04-c",
+          "etykieta": "Gra projektowana głównie dla grup",
+          "zalety": [
+            "Można budować zadania kooperacyjne i dyskusję przed decyzją."
+          ],
+          "wady": ["Osłabia doświadczenie pojedynczego turysty."]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "s04-a",
+        "uzasadnienie": "Większość obecnych mechanik — obserwacja, decyzje, mapa, aparat, GPS — naturalnie działa dla jednej osoby, a grupę można obsłużyć później bez zmiany kanonu."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "s05",
+      "tresc": "Co ma się dziać po błędzie gracza?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "s05-a",
+          "etykieta": "Błąd tylko informuje i pozwala próbować bez skutku",
+          "zalety": ["Niski poziom frustracji."],
+          "wady": ["Decyzje i wnioskowanie tracą ciężar."]
+        },
+        {
+          "id": "s05-b",
+          "etykieta": "Błąd nie blokuje gry, ale zmienia wiedzę, koszt, dostęp albo epilog",
+          "zalety": [
+            "Zachowuje konsekwencje bez game over.",
+            "Dobrze działa w turystyce, gdzie nie można wymagać restartu kilkukilometrowej trasy."
+          ],
+          "wady": ["Trudniejsze projektowanie wielu sensownych następstw."]
+        },
+        {
+          "id": "s05-c",
+          "etykieta": "Możliwa twarda porażka i restart aktu/gry",
+          "zalety": ["Większe napięcie i stawka."],
+          "wady": [
+            "Bardzo nieprzyjazne podczas realnego spaceru i może karać za warunki niezależne od gracza."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "s05-b",
+        "uzasadnienie": "Zgodne z ustaleniem, że błąd nie zeruje kampanii, ale może mieć fabularny koszt."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "s06",
+      "tresc": "Jak bardzo jedna część ma zachęcać do ponownego przejścia?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "s06-a",
+          "etykieta": "Jedno przejście ma pokazać prawie całą zawartość",
+          "zalety": ["Najlepsze dla jednorazowego turysty."],
+          "wady": ["Mniejsza wartość rozgałęzień i alternatywnych zakończeń."]
+        },
+        {
+          "id": "s06-b",
+          "etykieta": "Jedno przejście pełne, ale inne decyzje odsłaniają wyraźnie inne sceny/epilogi",
+          "zalety": [
+            "Daje wartość powtórki bez okrajania pierwszego przejścia."
+          ],
+          "wady": [
+            "Wymaga pilnowania, by alternatywy były naprawdę różne, a nie kosmetyczne."
+          ]
+        },
+        {
+          "id": "s06-c",
+          "etykieta": "Silna regrywalność: znaczna część treści wzajemnie się wyklucza",
+          "zalety": ["Największa różnorodność ścieżek."],
+          "wady": [
+            "Turysta może czuć, że zapłacił za treści, których nie zobaczy bez powtarzania spaceru."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "s06-b",
+        "uzasadnienie": "Pozwala uzasadnić rozgałęzienia i epilogi, ale nie wymaga, by turysta powtarzał całą trasę dla podstawowego sensu historii."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "m01",
+      "tresc": "Jak wdrożyć nowy pomysł: podpowiedź dopiero po wykonaniu dodatkowego zadania?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "m01-a",
+          "etykieta": "Każda podpowiedź wymaga dodatkowego zadania, czasem w innej lokalizacji",
+          "zalety": [
+            "Podpowiedź staje się częścią gry zamiast darmowym przyciskiem."
+          ],
+          "wady": [
+            "Może zirytować gracza, który utknął, jest zmęczony albo ma ograniczoną mobilność."
+          ]
+        },
+        {
+          "id": "m01-b",
+          "etykieta": "Pierwsza lekka wskazówka dostępna lokalnie; mocniejsza podpowiedź wymaga zadania dodatkowego",
+          "zalety": [
+            "Naturalne stopniowanie pomocy.",
+            "Pozwala wykorzystać zmianę lokalizacji jako opcjonalną nagrodę za wysiłek."
+          ],
+          "wady": [
+            "Trzeba zaprojektować co najmniej dwa poziomy pomocy dla wielu zadań."
+          ]
+        },
+        {
+          "id": "m01-c",
+          "etykieta": "Podpowiedzi dostępne bez dodatkowych zadań",
+          "zalety": ["Najlepsza dostępność i prostota."],
+          "wady": [
+            "Traci się świeży pomysł na uczynienie pomocy pełnoprawną mechaniką."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "m01-b",
+        "uzasadnienie": "Stopniowanie pozwala zachować satysfakcję z samodzielnego rozwiązania, a jednocześnie nie zmusza każdego gracza do dodatkowego marszu."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "m02",
+      "tresc": "Jak często dodatkowe zadanie po podpowiedź może wymagać przejścia w inne miejsce?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "m02-a",
+          "etykieta": "Często — to standardowy koszt pełnej podpowiedzi",
+          "zalety": ["Mocno wiąże system podpowiedzi z eksploracją miasta."],
+          "wady": ["Może niepotrzebnie wydłużać trasę i powodować cofanie się."]
+        },
+        {
+          "id": "m02-b",
+          "etykieta": "Tylko w wybranych ważnych zagadkach i przy bliskich/logicznym punktach",
+          "zalety": ["Zachowuje efekt odkrycia bez przeciążenia marszem."],
+          "wady": [
+            "Wymaga ręcznej selekcji, które zagadki zasługują na taki wariant."
+          ]
+        },
+        {
+          "id": "m02-c",
+          "etykieta": "Nigdy — zadanie pomocnicze zawsze w obecnym miejscu",
+          "zalety": ["Najbardziej przewidywalna długość spaceru."],
+          "wady": ["Mniej okazji do odkrywania pobocznych miejsc."]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "m02-b",
+        "uzasadnienie": "Zmiana miejsca powinna być wyjątkową, znaczącą mechaniką, nie karą za utknięcie."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "m03",
+      "tresc": "Czy użycie podpowiedzi ma wpływać na zakończenie albo ocenę gracza?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "m03-a",
+          "etykieta": "Nie — podpowiedź nie jest karą moralną ani blokadą dobrego finału",
+          "zalety": [
+            "Dostępność i uczciwość wobec graczy o różnym doświadczeniu."
+          ],
+          "wady": [
+            "Mniej miejsca na klasyczny system punktów za perfekcyjne przejście."
+          ]
+        },
+        {
+          "id": "m03-b",
+          "etykieta": "Nie zmienia fabuły, ale wpływa na osobne statystyki/osiągnięcia",
+          "zalety": ["Można nagrodzić samodzielność bez karania w historii."],
+          "wady": ["Może wywołać presję u osób, które nie lubią tracić „100%”."]
+        },
+        {
+          "id": "m03-c",
+          "etykieta": "Podpowiedzi mogą pogorszyć wynik lub zakończenie",
+          "zalety": ["Wysoka stawka i motywacja do samodzielnego myślenia."],
+          "wady": [
+            "Niespójne z dostępnością i może karać osoby z ograniczeniami."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "m03-a",
+        "uzasadnienie": "Dotychczasowa filozofia oddziela sposób uzyskania informacji od moralnych decyzji fabularnych."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "m04",
+      "tresc": "Jaki ma być domyślny typ zadań przy lokacjach?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "m04-a",
+          "etykieta": "Głównie pytania wiedzy historycznej",
+          "zalety": ["Łatwe do tworzenia i aktualizacji."],
+          "wady": [
+            "Telefon może zastąpić miejsce; gracz może odpowiadać bez patrzenia na Trzebiatów."
+          ]
+        },
+        {
+          "id": "m04-b",
+          "etykieta": "Obserwacja, policzenie, odczytanie, porównanie, ustawienie się w punkcie, dedukcja",
+          "zalety": [
+            "Miejsce staje się częścią mechaniki.",
+            "Lepsze połączenie zwiedzania z grą."
+          ],
+          "wady": [
+            "Każda odpowiedź i widoczność wymagają rekonesansu terenowego."
+          ]
+        },
+        {
+          "id": "m04-c",
+          "etykieta": "Głównie abstrakcyjne minigry na ekranie",
+          "zalety": ["Duża różnorodność mechaniczna."],
+          "wady": [
+            "Odciąga uwagę od miasta i może wyglądać jak sztucznie doklejona gra."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "m04-b",
+        "uzasadnienie": "Najlepiej odpowiada wcześniejszej krytyce pytań typu prawda/fałsz i preferencji obserwacji fizycznego miejsca."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "m05",
+      "tresc": "Jak surowo sprawdzać odpowiedzi terenowe?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "m05-a",
+          "etykieta": "Ścisła jedna odpowiedź",
+          "zalety": ["Prosta walidacja i jasne reguły."],
+          "wady": [
+            "Literówka, odmiana słowa lub niejednoznaczność może niesprawiedliwie blokować."
+          ]
+        },
+        {
+          "id": "m05-b",
+          "etykieta": "Normalizowane warianty + rozsądna tolerancja + ręczne obejście awarii",
+          "zalety": ["Większa odporność na realne warunki i język."],
+          "wady": [
+            "Trzeba przygotować zestawy poprawnych wariantów i zasady fallbacku."
+          ]
+        },
+        {
+          "id": "m05-c",
+          "etykieta": "Gracz sam oznacza, czy odpowiedział dobrze",
+          "zalety": ["Brak problemów z walidacją."],
+          "wady": ["Bardzo łatwo ominąć zadania i zmniejszyć satysfakcję."]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "m05-b",
+        "uzasadnienie": "Najbezpieczniejsza równowaga między uczciwym zadaniem a nieblokowaniem gracza przez drobne różnice zapisu."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "m06",
+      "tresc": "Co mają dawać zadania poboczne?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "m06-a",
+          "etykieta": "Tylko osiągnięcia i kolekcjonowanie",
+          "zalety": ["Nie komplikują głównego grafu kampanii."],
+          "wady": ["Mogą wydawać się odłączone od fabuły."]
+        },
+        {
+          "id": "m06-b",
+          "etykieta": "Dodatkową wiedzę, alternatywne dowody, epilogi, wygodniejszą drogę — ale nie jedyny dobry finał",
+          "zalety": ["Realna wartość bez obowiązkowości."],
+          "wady": [
+            "Trzeba pilnować równoważnych dróg dla gracza, który je pominie."
+          ]
+        },
+        {
+          "id": "m06-c",
+          "etykieta": "Mogą być wymagane do najlepszego zakończenia",
+          "zalety": ["Silna motywacja do pełnej eksploracji."],
+          "wady": ["Ryzyko, że opcjonalność stanie się pozorna."]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "m06-b",
+        "uzasadnienie": "Najlepiej rozszerzają historię bez tworzenia pay-to-win ani ukrytych obowiązków."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "i01",
+      "tresc": "Kim ma być główny bohater „Legendy Kaszanej Baszty”?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "i01-a",
+          "etykieta": "Pomocnik miejskiego pisarza",
+          "zalety": [
+            "Naturalny dostęp do zapisów, zeznań i poleceń.",
+            "Pasuje do mechaniki wiedza ≠ dowód ≠ nośnik."
+          ],
+          "wady": [
+            "Bohater może wydawać się mniej „przygodowy”, jeśli narracja będzie zbyt urzędowa."
+          ]
+        },
+        {
+          "id": "i01-b",
+          "etykieta": "Młody pomocnik straży",
+          "zalety": ["Bardziej bezpośredni związek z murami i alarmem."],
+          "wady": [
+            "Trudniej uzasadnić dostęp do dokumentów, świadków cywilnych i neutralność."
+          ]
+        },
+        {
+          "id": "i01-c",
+          "etykieta": "Mieszkaniec związany z dostawą posiłku",
+          "zalety": ["Najbliższy emocjonalnie samej legendzie o kaszy."],
+          "wady": ["Słabszy naturalny dostęp do formalnych decyzji miasta."]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "i01-a",
+        "uzasadnienie": "Pomocnik pisarza dobrze łączy dokumenty, świadectwa, obowiązki i finałowy zapis bez robienia z gracza wojownika."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "i02",
+      "tresc": "Czy misa kaszy ma zawsze uruchamiać legendarny alarm?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "i02-a",
+          "etykieta": "Tak — incydent jest stały, zmienne są skutki i zapis",
+          "zalety": [
+            "Legenda pozostaje legendą Kaszanej Baszty niezależnie od ścieżki."
+          ],
+          "wady": ["Gracz nie może całkowicie zapobiec centralnemu zdarzeniu."]
+        },
+        {
+          "id": "i02-b",
+          "etykieta": "Nie — gracz może doprowadzić do różnych wersji samego incydentu",
+          "zalety": ["Bardzo silne poczucie wpływu."],
+          "wady": [
+            "Tworzy alternatywną historię i wymaga wielu wersji kluczowej legendy."
+          ]
+        },
+        {
+          "id": "i02-c",
+          "etykieta": "Incydent stały tylko w pierwszym przejściu; alternatywa odblokowana później",
+          "zalety": ["Łączy kanon z eksperymentalną regrywalnością."],
+          "wady": [
+            "Może komplikować kanon i komunikację tego, co jest „prawdziwą” wersją gry."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "i02-a",
+        "uzasadnienie": "Pozwala zachować rozpoznawalny rdzeń legendy; decyzje gracza zmieniają przygotowanie, straty, odpowiedzialność i pamięć o wydarzeniu."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "i03",
+      "tresc": "Co faktycznie stoi za luką w przygotowaniu warty?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "i03-a",
+          "etykieta": "Zaniedbanie organizacyjne + próba ukrycia starego/nieaktualnego wykazu",
+          "zalety": [
+            "Wiarygodny, ludzki konflikt z miejscem na niejednoznaczność."
+          ],
+          "wady": ["Mniej widowiskowe niż celowy sabotaż."]
+        },
+        {
+          "id": "i03-b",
+          "etykieta": "Świadome osłabienie obrony / sabotaż",
+          "zalety": ["Większe napięcie śledcze i wyraźny antagonista."],
+          "wady": [
+            "Wymaga bardzo ostrożnego oznaczenia jako fikcja i może przesunąć grę w stronę thrillera."
+          ]
+        },
+        {
+          "id": "i03-c",
+          "etykieta": "Brak jednej winnej osoby — splot kilku drobnych decyzji",
+          "zalety": [
+            "Najbardziej dojrzały i społeczny obraz odpowiedzialności."
+          ],
+          "wady": [
+            "Trudniej zbudować czytelne śledztwo i satysfakcjonujące rozliczenie."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "i03-a",
+        "uzasadnienie": "Zaniedbanie i ukrycie błędu daje konflikt bez konieczności wymyślania wielkiej konspiracji."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "i04",
+      "tresc": "Jak traktować przesądy, legendy i możliwe elementy nadprzyrodzone?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "i04-a",
+          "etykieta": "Całkowicie realistycznie, bez sugestii nadprzyrodzonych",
+          "zalety": ["Największa zgodność z historycznym charakterem."],
+          "wady": ["Może osłabić atmosferę legend i średniowiecznych wierzeń."]
+        },
+        {
+          "id": "i04-b",
+          "etykieta": "Dwuznacznie: ludzie wierzą, gracz doświadcza niepokojących znaków, ale gra nie potwierdza magii",
+          "zalety": ["Bogaty klimat przy zachowaniu wiarygodności."],
+          "wady": [
+            "Wymaga subtelnego pisania, by nie wyglądało jak niedokończony wątek fantasy."
+          ]
+        },
+        {
+          "id": "i04-c",
+          "etykieta": "Rzeczywiste zjawiska nadprzyrodzone istnieją w świecie gry",
+          "zalety": ["Największy potencjał horror/fantasy."],
+          "wady": [
+            "Mocno zmienia charakter serii historycznej i może wymagać wspólnej metafizyki trylogii."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "i04-b",
+        "uzasadnienie": "Pozwala zachować średniowieczny lęk i folklor bez potwierdzania magii jako obiektywnego faktu."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "i05",
+      "tresc": "Co ma być najważniejszym wymiarem zakończenia?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "i05-a",
+          "etykieta": "Wyłącznie wynik obrony i liczba uratowanych/strat",
+          "zalety": ["Bardzo czytelna stawka."],
+          "wady": ["Spłaszcza świadków, dokumenty i odpowiedzialność."]
+        },
+        {
+          "id": "i05-b",
+          "etykieta": "Dwa poziomy: skutek nocy + to, co zostanie zapisane/ujawnione",
+          "zalety": [
+            "Decyzje przed finałem wracają w dwóch różnych wymiarach.",
+            "Pozwala na epilogi ludzi bez globalnego „dobry/zły”."
+          ],
+          "wady": ["Wymaga precyzyjnego resolvera zakończeń."]
+        },
+        {
+          "id": "i05-c",
+          "etykieta": "Głównie pamięć i kronika; obrona prawie zawsze podobna",
+          "zalety": ["Mocno podkreśla temat historii i narracji."],
+          "wady": ["Może osłabić znaczenie przygotowań terenowych."]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "i05-b",
+        "uzasadnienie": "Połączenie realnego skutku nocy z tym, co zostaje zapisane, najlepiej wykorzystuje rolę bohatera i system świadectw."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "i06",
+      "tresc": "Jak modelować pomoc przed finałem?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "i06-a",
+          "etykieta": "Stała liczba jednostek pomocy mniejsza niż liczba potrzeb",
+          "zalety": [
+            "Czytelny, kontrolowany dylemat i łatwe porównanie ścieżek."
+          ],
+          "wady": [
+            "Może wyglądać zbyt „planszówkowo”, jeśli liczby będą mocno eksponowane."
+          ]
+        },
+        {
+          "id": "i06-b",
+          "etykieta": "Zasoby wynikają dynamicznie z wcześniejszych działań",
+          "zalety": ["Silna integracja całej kampanii."],
+          "wady": [
+            "Ryzyko, że optymalna ścieżka pozwoli zabezpieczyć wszystko i usunie dylemat."
+          ]
+        },
+        {
+          "id": "i06-c",
+          "etykieta": "Bez abstrakcyjnych jednostek; tylko konkretne osoby/przedmioty",
+          "zalety": ["Najbardziej naturalistyczne i fabularne."],
+          "wady": [
+            "Trudniej zachować przejrzystość oraz balans wielu konsekwencji."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "i06-a",
+        "uzasadnienie": "Obecny szkic zakłada świadomy brak: gracz nie może zabezpieczyć wszystkiego, więc każda decyzja ma koszt."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "i07",
+      "tresc": "Jak komunikować zakończenia graczowi?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "i07-a",
+          "etykieta": "Kilka nazwanych zakończeń i koniec",
+          "zalety": ["Bardzo czytelne i marketingowe."],
+          "wady": ["Może ukrywać wpływ drobniejszych decyzji."]
+        },
+        {
+          "id": "i07-b",
+          "etykieta": "3–5 wyników głównych + osobne epilogi postaci/wątków",
+          "zalety": ["Duża różnorodność bez kombinatorycznego chaosu."],
+          "wady": [
+            "Trzeba dobrze wyjaśnić graczowi, które elementy finału wynikły z czego."
+          ]
+        },
+        {
+          "id": "i07-c",
+          "etykieta": "Każda kombinacja skutków to osobne nazwane zakończenie",
+          "zalety": ["Maksymalna granularność."],
+          "wady": [
+            "Szybko prowadzi do dziesiątek lub setek „zakończeń” różniących się detalami."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "i07-b",
+        "uzasadnienie": "Jeden wynik główny plus epilogi wątków zapobiega sztucznemu reklamowaniu dziesiątek kombinacji jako osobnych finałów."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "ii01",
+      "tresc": "Który wycinek wojny ma być głównym czasem akcji?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "ii01-a",
+          "etykieta": "Początek wojny 1939–1940",
+          "zalety": ["Czytelny historyczny punkt startowy."],
+          "wady": [
+            "Słabiej wiąże się z lokalną późną ewakuacją i bezpośrednim zagrożeniem końca wojny."
+          ]
+        },
+        {
+          "id": "ii01-b",
+          "etykieta": "Końcowa faza wojny, dokładny zakres po kwerendzie",
+          "zalety": [
+            "Największe lokalne napięcie, ewakuacja, załamanie porządku i presja czasu."
+          ],
+          "wady": [
+            "Wymaga szczególnie dokładnej chronologii i ostrożności w przedstawianiu przemocy."
+          ]
+        },
+        {
+          "id": "ii01-c",
+          "etykieta": "Kampania obejmująca kilka lat wojny",
+          "zalety": ["Pokazuje przemianę miasta i bohaterów."],
+          "wady": [
+            "Trudniej pogodzić długi czas historyczny z jedną trasą terenową i spójną depeszą."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "ii01-b",
+        "uzasadnienie": "Końcowy okres wojny i wydarzenia prowadzące do 1945 r. dają naturalne napięcie, ale dokładne daty powinny wyniknąć z kwerendy."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "ii02",
+      "tresc": "Jak ma działać wybór Polak/Niemiec?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "ii02-a",
+          "etykieta": "Ta sama kampania, tylko inny tekst i portret bohatera",
+          "zalety": ["Najtańsza w produkcji."],
+          "wady": [
+            "Wybór byłby w dużej mierze kosmetyczny i historycznie spłaszczający."
+          ]
+        },
+        {
+          "id": "ii02-b",
+          "etykieta": "Wspólny rdzeń wydarzeń, ale odmienne sceny, dostęp, ryzyko i część decyzji",
+          "zalety": [
+            "Znaczący wybór przy zachowaniu wspólnej konstrukcji produkcyjnej."
+          ],
+          "wady": ["Większy koszt pisania, testowania i weryfikacji źródeł."]
+        },
+        {
+          "id": "ii02-c",
+          "etykieta": "Dwie niemal całkowicie osobne kampanie",
+          "zalety": ["Największa odmienność perspektyw."],
+          "wady": [
+            "Prawie podwaja produkcję i utrudnia utrzymanie spójności głównej tajemnicy."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "ii02-b",
+        "uzasadnienie": "Różne prologi, dostęp, ryzyko i informacje pozwalają pokazać asymetrię realiów bez udawania, że obie role mają taką samą pozycję."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "ii03",
+      "tresc": "Czym ma być tytułowa DEPESZA?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "ii03-a",
+          "etykieta": "Wiadomość o ruchu ludzi, kolei, ewakuacji lub zagrożeniu, istotna dla konkretnych osób",
+          "zalety": ["Możliwa do osadzenia w realnej lokalnej chronologii."],
+          "wady": ["Mniej sensacyjna niż depesza o tajnym planie wojskowym."]
+        },
+        {
+          "id": "ii03-b",
+          "etykieta": "Wiadomość wywiadowcza o znaczeniu militarnym",
+          "zalety": ["Silny thriller i jasna stawka."],
+          "wady": [
+            "Wymaga solidnych podstaw źródłowych, by nie sugerować fikcyjnej lokalnej siatki jako faktu."
+          ]
+        },
+        {
+          "id": "ii03-c",
+          "etykieta": "Depesza prywatna/rodzinna, której znaczenie rośnie przez kontekst wojny",
+          "zalety": ["Bardzo osobista i emocjonalna."],
+          "wady": ["Może osłabić szpiegowsko-thrillerowy charakter tytułu."]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "ii03-a",
+        "uzasadnienie": "Cywilna/organizacyjna informacja osadzona w realiach wojny daje napięcie bez tworzenia niepotwierdzonej lokalnej super-siatki wywiadowczej."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "ii04",
+      "tresc": "Jak mocno część II ma pokazywać przemoc wojenną?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "ii04-a",
+          "etykieta": "Łagodnie, głównie poza kadrem",
+          "zalety": [
+            "Szersza grupa odbiorców i łatwiejsza dystrybucja turystyczna."
+          ],
+          "wady": ["Ryzyko zbyt bezpiecznego, wygładzonego obrazu wojny."]
+        },
+        {
+          "id": "ii04-b",
+          "etykieta": "Mocno emocjonalnie i dźwiękowo, lecz bez epatowania gore; docelowo co najmniej 16+ do oceny",
+          "zalety": ["Zachowuje powagę i napięcie przy kontroli ekspozycji."],
+          "wady": ["Wymaga ostrzeżeń treści i alternatyw dla osób wrażliwych."]
+        },
+        {
+          "id": "ii04-c",
+          "etykieta": "Bardzo brutalnie, wariant 18+ jako rdzeń",
+          "zalety": ["Najmocniejsze doświadczenie wojenne."],
+          "wady": [
+            "Znacznie zawęża odbiorców i może przyćmić historię miasta samą przemocą."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "ii04-b",
+        "uzasadnienie": "Pozwala zachować ciężar wojny i planowany mroczny klimat bez robienia z gry symulatora brutalności."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "ii05",
+      "tresc": "Czy gracz ma wykonywać mechaniki walki?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "ii05-a",
+          "etykieta": "Nie — przemoc istnieje w świecie, ale gracz nie steruje walką",
+          "zalety": ["Utrzymuje nacisk na decyzje i realia cywilne."],
+          "wady": ["Mniej atrakcyjne dla odbiorców oczekujących akcji."]
+        },
+        {
+          "id": "ii05-b",
+          "etykieta": "Tylko pojedyncze sytuacje obrony/ucieczki jako decyzje narracyjne",
+          "zalety": ["Może zwiększyć napięcie bez systemu combat."],
+          "wady": [
+            "Trzeba uważać, by nie przemienić dramatu w quick-time event."
+          ]
+        },
+        {
+          "id": "ii05-c",
+          "etykieta": "Pełniejszy system walki lub skradania",
+          "zalety": ["Dużo mechanicznej akcji."],
+          "wady": [
+            "Ogromny wzrost kosztu, ryzyka i odejście od terenowo-historycznego rdzenia."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "ii05-a",
+        "uzasadnienie": "Dotychczasowy kierunek opiera część II na informacji, ryzyku, przekazywaniu i ochronie ludzi, nie na walce."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "ii06",
+      "tresc": "Jak prowadzić niemieckiego bohatera/cywila?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "ii06-a",
+          "etykieta": "Jednoznacznie heroiczny przeciwnik nazizmu od początku",
+          "zalety": ["Łatwiejsza identyfikacja gracza."],
+          "wady": ["Może być przewidywalne i zbyt wygładzać realia społeczne."]
+        },
+        {
+          "id": "ii06-b",
+          "etykieta": "Zwykły cywil z ograniczoną sprawczością, uwikłaniem i realnymi wyborami; bez zrównywania ryzyk",
+          "zalety": [
+            "Największa możliwość niuansu i historycznej odpowiedzialności."
+          ],
+          "wady": [
+            "Wymaga bardzo starannego scenariusza oraz konsultacji historycznej."
+          ]
+        },
+        {
+          "id": "ii06-c",
+          "etykieta": "Bohater związany z aparatem państwa/wojska",
+          "zalety": ["Bardzo silne dylematy i dostęp do informacji."],
+          "wady": [
+            "Najwyższe ryzyko banalizacji, niezamierzonego usprawiedliwiania lub potrzeby trudnych scen."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "ii06-b",
+        "uzasadnienie": "Indywidualna postać powinna mieć własną sprawczość i odpowiedzialność, ale gra nie może tworzyć fałszywej symetrii systemowej."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "iii01",
+      "tresc": "Jak zawęzić przyjęty przedział XV–XVII w.?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "iii01-a",
+          "etykieta": "Główna akcja w XVI w.; dokładny rok po kwerendzie",
+          "zalety": [
+            "Najlepsze dopasowanie do księgi portowej i rozwoju portu."
+          ],
+          "wady": [
+            "Wymaga później konsekwentnego odrzucenia atrakcyjnych elementów z innych stuleci."
+          ]
+        },
+        {
+          "id": "iii01-b",
+          "etykieta": "Luźno XV–XVII w. bez konkretnego roku",
+          "zalety": ["Duża swoboda materiałowa."],
+          "wady": [
+            "Łatwo stworzyć anachronizmy w sprzęcie, języku i organizacji portu."
+          ]
+        },
+        {
+          "id": "iii01-c",
+          "etykieta": "Kilka rozdziałów w różnych epokach XV–XVII w.",
+          "zalety": ["Można pokazać zmianę wybrzeża i osad."],
+          "wady": ["Rozmywa jednego bohatera, stawkę i logikę kampanii."]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "iii01-a",
+        "uzasadnienie": "Istnienie księgi portowej 1536–1569 daje wyjątkowo mocny punkt zaczepienia dla kwerendy i fabularnych dokumentów."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "iii02",
+      "tresc": "Kim ma być gracz?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "iii02-a",
+          "etykieta": "Młody członek lokalnej załogi / gospodarstwa rybackiego",
+          "zalety": [
+            "Naturalny dostęp do ludzi, sieci, łodzi i sporów o straty."
+          ],
+          "wady": ["Mniejszy dostęp do oficjalnych ksiąg bez pośredników."]
+        },
+        {
+          "id": "iii02-b",
+          "etykieta": "Pisarz/urzędnik portowy",
+          "zalety": ["Naturalny dostęp do rejestrów i sporów prawnych."],
+          "wady": ["Słabsze poczucie fizycznej pracy i zagrożenia na wodzie."]
+        },
+        {
+          "id": "iii02-c",
+          "etykieta": "Kupiec związany z portem",
+          "zalety": ["Silny konflikt ładunek–zysk–ratunek."],
+          "wady": [
+            "Może przesunąć opowieść od rybaków i wspólnoty w stronę handlu."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "iii02-a",
+        "uzasadnienie": "Rola młodego członka lokalnej załogi łączy morze, rodzinę, sprzęt, ryzyko i społeczność bez przerabiania gry na historię wielkiej żeglugi."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "iii03",
+      "tresc": "Jaki ma być podstawowy cel kampanii?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "iii03-a",
+          "etykieta": "Odnaleźć zaginioną lokalną łódź i rozstrzygnąć ratunek/straty",
+          "zalety": [
+            "Naturalnie integruje niemal wszystkie planowane mechaniki III."
+          ],
+          "wady": [
+            "Wymaga wiarygodnego historycznie sposobu zaginięcia i poszukiwania."
+          ]
+        },
+        {
+          "id": "iii03-b",
+          "etykieta": "Rozwiązać spór o prawa do połowu i portu",
+          "zalety": ["Bardzo lokalny, historyczny i społeczny konflikt."],
+          "wady": ["Mniej bezpośredniego napięcia i przygodowości."]
+        },
+        {
+          "id": "iii03-c",
+          "etykieta": "Odkryć tajemnicę ładunku z księgi portowej",
+          "zalety": ["Silniejsza tajemnica i potencjał śledczy."],
+          "wady": [
+            "Łatwo przesunąć serię w stronę skarbu/piratów, czego projekt ma unikać."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "iii03-a",
+        "uzasadnienie": "Zaginiona lokalna łódź łączy śledztwo, warunki wodne, sprzęt, ratunek i odpowiedzialność za ładunek."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "iii04",
+      "tresc": "Jak szeroka ma być realna trasa?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "iii04-a",
+          "etykieta": "Jedna ciągła trasa od Trzebiatowa po wybrzeże",
+          "zalety": ["Silne poczucie podróży i związku rzeki z morzem."],
+          "wady": ["Dystans może być zbyt duży dla typowej gry pieszej."]
+        },
+        {
+          "id": "iii04-b",
+          "etykieta": "Rozdziały: Trzebiatów + Mrzeżyno/ujście Regi; dalsze punkty opcjonalne",
+          "zalety": ["Elastyczny czas i możliwość przerwy/dojazdu."],
+          "wady": ["Trzeba jasno komunikować zmianę rozdziału i transport."]
+        },
+        {
+          "id": "iii04-c",
+          "etykieta": "Prawie cała kampania wyłącznie nad morzem",
+          "zalety": ["Najbardziej skoncentrowany klimat rybacki."],
+          "wady": [
+            "Słabiej wykorzystuje Trzebiatów i więź całej serii z miastem."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "iii04-b",
+        "uzasadnienie": "Rozdzielenie na moduły pozwala zachować lokalność Trzebiatów–Mrzeżyno bez zmuszania gracza do jednej bardzo długiej pieszej trasy."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "iii05",
+      "tresc": "Jak symulować warunki wodne?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "iii05-a",
+          "etykieta": "Warunki zależne od realnej pogody użytkownika",
+          "zalety": ["Silne połączenie gry z rzeczywistością."],
+          "wady": [
+            "Niedeterministyczne, trudne offline i może blokować zawartość."
+          ]
+        },
+        {
+          "id": "iii05-b",
+          "etykieta": "Narracyjne „okna wodne” uruchamiane decyzjami i stanem kampanii",
+          "zalety": [
+            "Kontrolowane, testowalne i działają niezależnie od realnej pogody."
+          ],
+          "wady": ["Trzeba przekonująco zakomunikować upływ czasu fabularnego."]
+        },
+        {
+          "id": "iii05-c",
+          "etykieta": "Bez mechaniki warunków — tylko opis atmosferyczny",
+          "zalety": ["Najprostsza produkcja."],
+          "wady": ["Traci się unikalny mechaniczny charakter części III."]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "iii05-b",
+        "uzasadnienie": "Warunki powinny wpływać na decyzje, ale bez udawania symulatora żeglarskiego i bez zależności od rzeczywistej pogody w dniu spaceru."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "t01",
+      "tresc": "Jak dokładnie ma działać rozszerzone zadanie fotograficzne?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "t01-a",
+          "etykieta": "Samo wykonanie zdjęcia w punkcie odblokowuje historyczny kadr; bez oceny podobieństwa",
+          "zalety": ["Proste, prywatne i odporne na zmiany otoczenia."],
+          "wady": [
+            "Gracz może zrobić przypadkowe zdjęcie i formalnie zaliczyć zadanie."
+          ]
+        },
+        {
+          "id": "t01-b",
+          "etykieta": "Aplikacja pomaga ustawić kadr, ale nie blokuje zaliczenia",
+          "zalety": ["Większa satysfakcja z porównania „teraz/kiedyś”."],
+          "wady": ["Potrzebuje dodatkowego interfejsu i kalibracji."]
+        },
+        {
+          "id": "t01-c",
+          "etykieta": "Ścisła analiza zdjęcia/AI decyduje o zaliczeniu",
+          "zalety": ["Najbardziej „growa” weryfikacja kadru."],
+          "wady": [
+            "Duże ryzyko fałszywych odrzuceń, prywatności, kosztu i problemów offline."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "t01-a",
+        "uzasadnienie": "Zachowuje uzgodnioną kolejność: dotrzeć → zrobić własne zdjęcie → zobaczyć zbliżony kadr historyczny, bez kosztownej i ryzykownej walidacji AI."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "t02",
+      "tresc": "Jak traktować fotograficzne zadania rozszerzone?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "t02-a",
+          "etykieta": "Opcjonalny płatny/rozszerzony moduł, bez wpływu na podstawowy dobry finał",
+          "zalety": [
+            "Czytelne rozdzielenie zawartości premium od integralności kampanii."
+          ],
+          "wady": [
+            "Trzeba dać rozszerzeniu wystarczającą wartość, by nie wyglądało jak kosmetyka."
+          ]
+        },
+        {
+          "id": "t02-b",
+          "etykieta": "Część fotografii w bazie, reszta w rozszerzeniu",
+          "zalety": ["Gracz może poznać mechanikę przed zakupem dodatku."],
+          "wady": ["Wymaga bardziej złożonego podziału zawartości."]
+        },
+        {
+          "id": "t02-c",
+          "etykieta": "Fotografia obowiązkowa w podstawowej kampanii",
+          "zalety": ["Mechanika staje się centralnym wyróżnikiem."],
+          "wady": [
+            "Wyklucza urządzenia bez działającego aparatu i komplikuje dostępność."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "t02-a",
+        "uzasadnienie": "Pasuje do wcześniejszego założenia, że dodatek poszerza wiedzę i epilog, ale nie kupuje najlepszego zakończenia."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "t03",
+      "tresc": "Jak potraktować czerwoną linię przebytej drogi?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "t03-a",
+          "etykieta": "Obowiązkowe ciągłe śledzenie GPS podczas całej rozgrywki",
+          "zalety": ["Najpełniejsza mapa spaceru."],
+          "wady": [
+            "Zużycie baterii, prywatność i konflikt z punktowym modelem GPS."
+          ]
+        },
+        {
+          "id": "t03-b",
+          "etykieta": "Opcjonalny lokalny rejestrator trasy z przełącznikiem i możliwością usunięcia",
+          "zalety": [
+            "Daje funkcję mapy bez wpływu na fabułę i z kontrolą prywatności."
+          ],
+          "wady": ["Wymaga osobnego modułu i jasnego zarządzania danymi."]
+        },
+        {
+          "id": "t03-c",
+          "etykieta": "Brak zapisu trasy; tylko bieżąca pozycja i odwiedzone miejsca",
+          "zalety": ["Najprostsze, najmniej danych i baterii."],
+          "wady": ["Rezygnuje z wcześniej pożądanego efektu czerwonej linii."]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "t03-b",
+        "uzasadnienie": "Spełnia życzenie wizualizacji trasy, ale nie wprowadza ciągłej historii GPS do silnika fabularnego."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "t04",
+      "tresc": "Ile dostępnych następnych miejsc ma pokazywać mapa?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "t04-a",
+          "etykieta": "Zawsze tylko jeden następny punkt",
+          "zalety": ["Najprostsza nawigacja i brak spoilerów."],
+          "wady": ["Ogranicza wielowątkowość oraz swobodę kolejności."]
+        },
+        {
+          "id": "t04-b",
+          "etykieta": "1–3 aktualnie dostępne alternatywy, reszta ukryta",
+          "zalety": ["Czytelna wolność wyboru bez ujawniania mapy fabuły."],
+          "wady": ["Wymaga dobrego priorytetyzowania punktów na małym ekranie."]
+        },
+        {
+          "id": "t04-c",
+          "etykieta": "Wszystkie potencjalne lokacje od początku",
+          "zalety": ["Pełna orientacja po mieście."],
+          "wady": ["Silne spoilery i utrata poczucia odkrywania."]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "t04-b",
+        "uzasadnienie": "Kilka jawnie dostępnych alternatyw daje poczucie wyboru, ale nie pokazuje całej przyszłej kampanii."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "t05",
+      "tresc": "Co ma się dziać, gdy technologia albo teren uniemożliwia standardowe zaliczenie?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "t05-a",
+          "etykieta": "Ręczne potwierdzenie/alternatywny punkt z równoważną informacją",
+          "zalety": ["Najbardziej odporne i dostępne rozwiązanie."],
+          "wady": [
+            "Nie daje pełnej technicznej pewności, że gracz faktycznie był w miejscu."
+          ]
+        },
+        {
+          "id": "t05-b",
+          "etykieta": "Gracz musi wrócić później lub włączyć GPS",
+          "zalety": ["Mocniejsze powiązanie z realną obecnością."],
+          "wady": [
+            "Może zniszczyć rozgrywkę turysty, który ma tylko jedną wizytę."
+          ]
+        },
+        {
+          "id": "t05-c",
+          "etykieta": "Scena jest automatycznie pomijana bez informacji zastępczej",
+          "zalety": ["Szybkie obejście problemu."],
+          "wady": ["Może zerwać logikę dowodów i późniejszych decyzji."]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "t05-a",
+        "uzasadnienie": "Jest to spójne z założeniem, że realny spacer nie może zostać zablokowany przez odmowę zgody, awarię GPS czy zamknięcie obiektu."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "p01",
+      "tresc": "Jak rozdzielić podstawową i rozszerzoną wersję?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "p01-a",
+          "etykieta": "Jedna wersja cyfrowa zawierająca wszystko",
+          "zalety": ["Najprostsza komunikacja i brak fragmentacji."],
+          "wady": [
+            "Mniej możliwości finansowania dodatkowych kosztownych materiałów."
+          ]
+        },
+        {
+          "id": "p01-b",
+          "etykieta": "Pełna kampania bazowa + opcjonalne moduły premium (np. fotografia, archiwalia, dodatkowe epilogi)",
+          "zalety": ["Monetyzacja bez blokowania głównego zakończenia."],
+          "wady": [
+            "Trzeba pilnować, by dodatki faktycznie rozszerzały, a nie wycinały rdzeń."
+          ]
+        },
+        {
+          "id": "p01-c",
+          "etykieta": "Różne wersje fabularne z ekskluzywnymi zakończeniami",
+          "zalety": ["Silna motywacja kolekcjonerska."],
+          "wady": ["Ryzyko pay-to-win/pay-to-story i frustracji graczy."]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "p01-b",
+        "uzasadnienie": "Jedna kompletna fabuła bazowa z dodatkami poszerzającymi odkrywanie historii jest najbardziej uczciwa i zgodna z dotychczasowymi założeniami."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "p02",
+      "tresc": "Jak fizyczne rekwizyty mają wpływać na logikę gry?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "p02-a",
+          "etykieta": "Fizyczne przedmioty są wymagane do części zagadek",
+          "zalety": ["Najmocniejsze połączenie produktu fizycznego z grą."],
+          "wady": [
+            "Rozbija dostępność cyfrową i komplikuje odsprzedaż/zgubienie elementów."
+          ]
+        },
+        {
+          "id": "p02-b",
+          "etykieta": "Rekwizyty premium wzbogacają doświadczenie, ale mają cyfrowe odpowiedniki",
+          "zalety": ["Zachowuje wartość kolekcjonerską bez blokowania graczy."],
+          "wady": [
+            "Trzeba projektować dwa sposoby prezentacji części materiałów."
+          ]
+        },
+        {
+          "id": "p02-c",
+          "etykieta": "Rekwizyty są tylko ozdobne i nie wchodzą do mechanik",
+          "zalety": ["Najprostsza produkcja cyfrowa."],
+          "wady": [
+            "Marnuje potencjał pudełek, map, pieczęci, kronik i dokumentów."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "p02-b",
+        "uzasadnienie": "Rekwizyty mogą wzmacniać immersję, ale cyfrowa kampania powinna pozostać grywalna bez konkretnego pudełka."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "p03",
+      "tresc": "Jak planować języki już na poziomie fabuły i danych?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "p03-a",
+          "etykieta": "Tylko polski, lokalizacja kiedyś",
+          "zalety": ["Najmniejszy koszt pierwszej wersji."],
+          "wady": [
+            "Późniejsze tłumaczenie może wymagać przebudowy tekstów, zagadek i layoutów."
+          ]
+        },
+        {
+          "id": "p03-b",
+          "etykieta": "Architektura od początku PL/DE/EN, publikacja języków etapami",
+          "zalety": [
+            "Chroni projekt przed późniejszymi problemami i pasuje do historii regionu/turystów."
+          ],
+          "wady": [
+            "Wymaga pilnowania identyfikatorów, wariantów odpowiedzi i treści niezależnych od języka."
+          ]
+        },
+        {
+          "id": "p03-c",
+          "etykieta": "Pełne PL/DE/EN już w pierwszym wydaniu części I",
+          "zalety": ["Najszerszy start turystyczny."],
+          "wady": [
+            "Znacznie zwiększa koszt redakcji, nagrań i testów przed sprawdzeniem podstawowej gry."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "p03-b",
+        "uzasadnienie": "Dla Trzebiatowa sensowne jest przygotowanie danych od początku pod lokalizację, ale produkcja pełnych tłumaczeń może być etapowana."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "p04",
+      "tresc": "Jaką długość przyjąć jako docelową dla podstawowej ścieżki jednej części?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "p04-a",
+          "etykieta": "60–90 minut",
+          "zalety": ["Łatwe do zmieszczenia w planie turysty i rodzin."],
+          "wady": [
+            "Mało miejsca na wielowątkowość, powroty i rozbudowane konsekwencje."
+          ]
+        },
+        {
+          "id": "p04-b",
+          "etykieta": "Około 2–3 godzin podstawowej ścieżki, opcjonalne treści wydłużają",
+          "zalety": ["Dobra równowaga między fabułą a realnym spacerem."],
+          "wady": ["Wymaga dokładnego rekonesansu dystansu i tempa."]
+        },
+        {
+          "id": "p04-c",
+          "etykieta": "4+ godziny / pół dnia jako standard",
+          "zalety": ["Duża głębia i więcej lokacji."],
+          "wady": [
+            "Zmęczenie, pogoda i dostępność punktów stają się dużo większym ryzykiem."
+          ]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "p04-b",
+        "uzasadnienie": "2–3 godziny dobrze pasują do gry terenowej wymagającej obserwacji i decyzji, a dłuższe wątki można rozbić na rozdziały."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    },
+    {
+      "id": "p05",
+      "tresc": "Czy uproszczony tryb ma zmieniać tylko prezentację czy także zawartość?",
+      "prezentacja": {
+        "rodzaj": "tekstowa"
+      },
+      "warianty": [
+        {
+          "id": "p05-a",
+          "etykieta": "Tylko prezentacja/media; ta sama fabuła i decyzje",
+          "zalety": [
+            "Pełna równoważność doświadczenia na słabszych urządzeniach."
+          ],
+          "wady": ["Nie skraca samego czasu rozgrywki."]
+        },
+        {
+          "id": "p05-b",
+          "etykieta": "EKO może także skracać część zadań i opisów",
+          "zalety": ["Lepszy dla graczy chcących krótszej trasy."],
+          "wady": [
+            "Powstają różne wersje logiki kampanii i trudniej porównywać zakończenia."
+          ]
+        },
+        {
+          "id": "p05-c",
+          "etykieta": "Brak osobnego EKO — aplikacja sama dostosowuje media",
+          "zalety": ["Mniej ustawień dla użytkownika."],
+          "wady": ["Gracz traci kontrolę nad baterią, transferem i animacjami."]
+        }
+      ],
+      "sposobyOdpowiedzi": [
+        {
+          "id": "wybor",
+          "rodzaj": "pojedynczyWybor",
+          "wymagany": true
+        }
+      ],
+      "rekomendacja": {
+        "wariantId": "p05-a",
+        "uzasadnienie": "Dotychczasowy kierunek zakłada, że tryb EKO ogranicza animacje i ciężkie media, ale nie usuwa decyzji ani treści."
+      },
+      "innaOdpowiedz": {
+        "etykieta": "Inne — własna odpowiedź",
+        "analiza": {
+          "tryb": "autorska",
+          "interpretacja": "Własna odpowiedź użytkownika — wymaga doprecyzowania jako konkretna zasada projektowa.",
+          "potencjalneSkutki": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ],
+          "zalety": [
+            "Pełna swoboda i możliwość zachowania pomysłu, którego nie przewidują warianty A/B/C."
+          ],
+          "wady": [
+            "Trzeba dopisać własną zasadę na tyle precyzyjnie, aby można ją było później zamienić w regułę gry."
+          ]
+        }
+      }
+    }
+  ],
+  "pytaniaDodatkowe": [],
+  "reguly": []
+}
